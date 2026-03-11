@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wade Institute — Creative Thinking Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header class="header">
+        <img class="logo" src="logo.png" alt="Wade Institute">
+    </header>
+
+    <!-- Active session bar (hidden until an exercise is selected) -->
+    <div class="session-bar hidden" id="sessionBar">
+        <span class="session-mode" id="sessionMode">Clarify</span>
+        <span class="session-sep">›</span>
+        <span class="session-exercise" id="sessionExercise">Five Whys</span>
+        <button class="session-close" id="sessionClose" title="Back to menu">✕</button>
+    </div>
+
+    <main class="chat-area" id="chatArea">
+        <div class="welcome" id="welcome">
+            <p class="welcome-tagline">Innovation is a mindset, a method and a muscle.</p>
+            <h1 class="welcome-title">Meet Wayde</h1>
+            <p class="welcome-sub">Your AI innovation coach.</p>
+            <p class="welcome-intro">Bring a challenge, an idea, or just a hunch — and let's think it through together.</p>
+
+            <div class="welcome-cards">
+
+                <div class="welcome-card card-reframe">
+                    <div class="card-header">
+                        <span class="card-mode-name">Clarify</span>
+                        <span class="card-mode-desc">Find the real problem</span>
+                    </div>
+                    <div class="card-exercises">
+                        <button class="card-exercise-btn" data-mode="reframe" data-exercise="five-whys">Five Whys</button>
+                        <button class="card-exercise-btn" data-mode="reframe" data-exercise="hmw">How Might We</button>
+                    </div>
+                </div>
+
+                <div class="welcome-card card-debate">
+                    <div class="card-header">
+                        <span class="card-mode-name">Test</span>
+                        <span class="card-mode-desc">Poke the weak spots</span>
+                    </div>
+                    <div class="card-exercises">
+                        <button class="card-exercise-btn" data-mode="debate" data-exercise="pre-mortem">Pre-Mortem</button>
+                        <button class="card-exercise-btn" data-mode="debate" data-exercise="devils-advocate">Devil's Advocate</button>
+                    </div>
+                </div>
+
+                <div class="welcome-card card-framework">
+                    <div class="card-header">
+                        <span class="card-mode-name">Build</span>
+                        <span class="card-mode-desc">Shape what comes next</span>
+                    </div>
+                    <div class="card-exercises">
+                        <button class="card-exercise-btn" data-mode="framework" data-exercise="empathy-map">Empathy Map</button>
+                        <button class="card-exercise-btn" data-mode="framework" data-exercise="lean-canvas">Lean Canvas</button>
+                        <button class="card-exercise-btn" data-mode="framework" data-exercise="effectuation">Effectuation</button>
+                        <button class="card-exercise-btn" data-mode="framework" data-exercise="rapid-experiment">Rapid Experiment</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="messages" id="messages"></div>
+
+        <!-- Report CTA (appears after 3+ exchanges) -->
+        <div class="report-cta hidden" id="reportCta">
+            <button class="report-cta-btn" id="reportCtaBtn">Get your session report →</button>
+        </div>
+
+        <!-- Report card (shown after lead capture) -->
+        <div class="report-card hidden" id="reportCard">
+            <div class="report-content" id="reportContent"></div>
+            <div class="report-footer">
+                <img class="report-logo" src="logo.png" alt="Wade Institute">
+                <span>Wade Institute of Entrepreneurship</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Lead capture modal overlay -->
+    <div class="lead-modal-overlay hidden" id="leadModal">
+        <div class="lead-modal">
+            <h2 class="lead-modal-title">Your session report is ready</h2>
+            <p class="lead-modal-sub">Enter your details to receive the report and hear about relevant Wade Institute programs.</p>
+            <form class="lead-form" id="leadForm">
+                <input type="text" class="lead-input" id="leadName" placeholder="Name" required>
+                <input type="email" class="lead-input" id="leadEmail" placeholder="Email" required>
+                <input type="text" class="lead-input" id="leadCompany" placeholder="Company / Organisation">
+                <input type="text" class="lead-input" id="leadRole" placeholder="Role">
+                <button type="submit" class="lead-submit" id="leadSubmit">Send me the report</button>
+            </form>
+            <p class="lead-disclaimer">Wade Institute may follow up with relevant program opportunities.</p>
+        </div>
+    </div>
+
+    <footer class="input-area">
+        <form class="input-form" id="inputForm">
+            <textarea class="input-field" id="inputField" placeholder="Describe your challenge or idea..." rows="1"></textarea>
+            <button class="send-btn" type="submit" id="sendBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </form>
+        <p class="input-hint">
+            <span class="mode-label" id="modeLabel"></span>
+            Wade Institute of Entrepreneurship
+        </p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
