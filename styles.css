@@ -795,6 +795,58 @@ body {
 .swap-suggest-btn.mode-framework:hover { border-color: var(--pink); background: rgba(255,100,160,0.08); }
 .swap-suggest-btn.mode-framework .swap-suggest-stage { color: var(--pink); }
 
+/* === WRAP UP PROMPT === */
+
+.wrap-prompt {
+    max-width: 600px;
+    margin: 1rem 0 0 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    animation: fadeIn 0.3s ease;
+}
+
+.wrap-prompt-text {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin: 0 0 0.75rem;
+}
+
+.wrap-prompt-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.wrap-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-family: var(--font);
+    font-size: 0.83rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wrap-btn:hover {
+    border-color: rgba(255,255,255,0.35);
+    color: var(--text);
+}
+
+.wrap-btn-report {
+    border-color: rgba(239, 90, 33, 0.4);
+    color: var(--orange);
+}
+
+.wrap-btn-report:hover {
+    background: rgba(239, 90, 33, 0.08);
+    border-color: var(--orange);
+}
+
 /* === ROUTING BACK === */
 
 .routing-back {

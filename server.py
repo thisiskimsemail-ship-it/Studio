@@ -446,6 +446,17 @@ def chat():
             + context_sections
         )
 
+    # Add end-of-exercise wrap signal for non-routing modes
+    if mode != 'routing':
+        system_prompt += (
+            "\n\n---\n\n"
+            "END-OF-EXERCISE SIGNAL: When you have genuinely completed the exercise framework — "
+            "all key phases done, synthesis delivered, the user has clear insights and concrete next steps, "
+            "and continuing would add little value — append the exact tag `[WRAP]` on its own line "
+            "at the very end of your response. Only emit [WRAP] once per session, only when the work "
+            "is truly complete. Never use [WRAP] mid-exercise or immediately after asking a follow-up question."
+        )
+
     def generate():
         try:
             with client.messages.stream(

@@ -476,6 +476,83 @@ function maybeShowReportCta() {
     }
 }
 
+// === WRAP UP PROMPT ===
+
+function renderWrapPrompt() {
+    const wrapDiv = document.createElement('div');
+    wrapDiv.className = 'wrap-prompt';
+
+    const next = NEXT_STAGE[state.mode];
+
+    let actionsHtml = '';
+    if (next) {
+        const nextModeName = MODE_LABELS[next.mode] || next.mode;
+        const nextExName = EXERCISE_LABELS[next.exercise] || next.exercise;
+        actionsHtml += `<button class="wrap-btn wrap-btn-continue">Continue to ${nextModeName} — ${nextExName} →</button>`;
+    }
+    actionsHtml += '<button class="wrap-btn wrap-btn-report">Get your session report →</button>';
+
+    wrapDiv.innerHTML = `
+        <p class="wrap-prompt-text">This exercise is complete.</p>
+        <div class="wrap-prompt-actions">${actionsHtml}</div>
+    `;
+
+    const continueWrapBtn = wrapDiv.querySelector('.wrap-btn-continue');
+    const reportWrapBtn = wrapDiv.querySelector('.wrap-btn-report');
+
+    if (continueWrapBtn) {
+        continueWrapBtn.addEventListener('click', () => {
+            const n = NEXT_STAGE[state.mode];
+            if (!n) return;
+
+            const prevMessages = [...state.messages];
+            const prevExercise = EXERCISE_LABELS[state.exercise] || state.exercise;
+            const nextExName = EXERCISE_LABELS[n.exercise] || n.exercise;
+
+            // Transition to next stage — carry conversation, no report required
+            state.mode = n.mode;
+            state.exercise = n.exercise;
+            state.exchangeCount = 0;
+            state.reportGenerated = false;
+            state.reportText = '';
+
+            sessionBar.dataset.mode = n.mode;
+            sessionMode.textContent = MODE_LABELS[n.mode] || n.mode;
+            sessionExercise.textContent = EXERCISE_LABELS[n.exercise] || n.exercise;
+            modeLabel.textContent = (EXERCISE_LABELS[n.exercise] || n.exercise) + ' · ';
+
+            reportCard.classList.add('hidden');
+            reportCard.classList.remove('report-preview');
+            reportUnlock.classList.add('hidden');
+            continueStage.classList.add('hidden');
+            wadeCta.classList.add('hidden');
+            reportCta.classList.remove('hidden');
+            reportCtaBtn.disabled = true;
+            reportCtaBtn.textContent = 'Talk to Wayde to build your report';
+            sessionSwap.disabled = false;
+
+            wrapDiv.remove();
+
+            state.messages = [
+                ...prevMessages,
+                { role: 'user', content: `I've completed ${prevExercise}. Let's move on to ${nextExName} — pick up from what we've discovered and start this next exercise.` }
+            ];
+
+            streamResponse();
+        });
+    }
+
+    if (reportWrapBtn) {
+        reportWrapBtn.addEventListener('click', () => {
+            wrapDiv.remove();
+            reportCtaBtn.click();
+        });
+    }
+
+    messagesEl.appendChild(wrapDiv);
+    scrollToBottom();
+}
+
 // === STREAMING ===
 
 async function streamResponse() {
@@ -559,11 +636,20 @@ async function streamResponse() {
     if (fullText) {
         // In routing mode: parse and strip [SUGGEST: key1, key2] tag
         let suggestedKeys = [];
+        let wrapSignaled = false;
+
         if (state.routing) {
             const suggestMatch = fullText.match(/\[SUGGEST:\s*([^\]]+)\]/);
             if (suggestMatch) {
                 suggestedKeys = suggestMatch[1].split(',').map(s => s.trim()).filter(k => EXERCISE_MODE[k]);
                 fullText = fullText.replace(/\n?\[SUGGEST:\s*[^\]]+\]/, '').trim();
+                if (agentDiv) agentDiv.innerHTML = renderMarkdown(fullText);
+            }
+        } else {
+            // Check for [WRAP] signal — natural end of exercise
+            if (fullText.includes('[WRAP]')) {
+                wrapSignaled = true;
+                fullText = fullText.replace(/\n?\[WRAP\]/, '').trim();
                 if (agentDiv) agentDiv.innerHTML = renderMarkdown(fullText);
             }
         }
@@ -589,6 +675,10 @@ async function streamResponse() {
         } else {
             state.exchangeCount++;
             maybeShowReportCta();
+            // Show wrap-up card if Wayde signalled the exercise is complete
+            if (wrapSignaled && !state.reportGenerated) {
+                renderWrapPrompt();
+            }
         }
     }
 
