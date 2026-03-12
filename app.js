@@ -80,6 +80,14 @@ const NEXT_STAGE = {
     framework: null
 };
 
+// Default exercise when navigating to a stage via the progress dots
+const STAGE_DEFAULT = {
+    reframe:   'five-whys',
+    ideate:    'hmw',
+    debate:    'pre-mortem',
+    framework: 'lean-canvas'
+};
+
 // === STATE ===
 const state = {
     mode: null,
@@ -108,7 +116,6 @@ const modeLabel = $('#modeLabel');
 const sessionBar = $('#sessionBar');
 const sessionMode = $('#sessionMode');
 const sessionExercise = $('#sessionExercise');
-const sessionSwap = $('#sessionSwap');
 const sessionClose = $('#sessionClose');
 const stageProgress = $('#stageProgress');
 const reportCta = $('#reportCta');
@@ -118,8 +125,6 @@ const reportContent = $('#reportContent');
 const leadModal = $('#leadModal');
 const leadForm = $('#leadForm');
 const leadSubmit = $('#leadSubmit');
-const continueStage = $('#continueStage');
-const continueBtn = $('#continueBtn');
 const wadeCta = $('#wadeCta');
 const reportUnlock = $('#reportUnlock');
 const unlockForm = $('#unlockForm');
@@ -129,13 +134,33 @@ const routingBackBtn = $('#routingBackBtn');
 // === STAGE PROGRESS ===
 
 function updateStageProgress(mode) {
-    stageProgress.classList.remove('hidden');
     stageProgress.dataset.mode = mode;
     const idx = STAGE_ORDER.indexOf(mode);
+    const canNav = state.exchangeCount >= 2;
     $$('.stage-step').forEach((step, i) => {
         step.classList.toggle('active', i === idx);
         step.classList.toggle('done', i < idx);
+        step.classList.toggle('clickable', i !== idx && canNav);
+        step.onclick = (i !== idx && canNav) ? () => navigateToStage(STAGE_ORDER[i]) : null;
     });
+}
+
+// Navigate to a stage via progress dots — carries report context if available
+function navigateToStage(targetMode) {
+    if (state.streaming) return;
+    const targetExercise = STAGE_DEFAULT[targetMode];
+    if (state.reportText) {
+        // Save current stage report into project context before moving on
+        state.projectContext.push({
+            stage: MODE_LABELS[state.mode] || state.mode,
+            exercise: EXERCISE_LABELS[state.exercise] || state.exercise,
+            report: state.reportText
+        });
+        const bridgeMsg = `I've completed ${EXERCISE_LABELS[state.exercise] || state.exercise} (${MODE_LABELS[state.mode] || state.mode} stage). Let's move to ${EXERCISE_LABELS[targetExercise] || targetExercise}, building directly on what I discovered.`;
+        startExercise(targetMode, targetExercise, bridgeMsg);
+    } else {
+        swapToTool(targetMode, targetExercise, null);
+    }
 }
 
 // === CARD NAVIGATION ===
@@ -189,7 +214,6 @@ function startExercise(mode, exercise, startMsg = null) {
     reportCard.classList.remove('report-preview');
     reportUnlock.classList.add('hidden');
     leadModal.classList.add('hidden');
-    continueStage.classList.add('hidden');
     wadeCta.classList.add('hidden');
     $('#reportDownloadBtn').classList.add('hidden');
     $('#reportShareBtn').classList.add('hidden');
@@ -199,9 +223,6 @@ function startExercise(mode, exercise, startMsg = null) {
     reportCta.classList.remove('hidden');
     reportCtaBtn.disabled = true;
     reportCtaBtn.textContent = 'Talk to Wayde to build your report';
-
-    // Swap button disabled until user has had a real exchange (exchangeCount >= 2)
-    sessionSwap.disabled = true;
 
     if (autoStartMsg) {
         // Use the user's actual description as the first message so Wayde skips
@@ -249,15 +270,12 @@ sessionClose.addEventListener('click', () => {
     inputField.value = ''; sendBtn.disabled = true;
     inputField.placeholder = 'Describe your challenge or idea...';
     modeLabel.textContent = '';
-    stageProgress.classList.add('hidden');
-    sessionSwap.disabled = true;
     state.rating = null;
     reportCta.classList.add('hidden');
     reportCard.classList.add('hidden');
     reportCard.classList.remove('report-preview');
     reportUnlock.classList.add('hidden');
     leadModal.classList.add('hidden');
-    continueStage.classList.add('hidden');
     wadeCta.classList.add('hidden');
     $('#reportDownloadBtn').classList.add('hidden');
     $('#reportShareBtn').classList.add('hidden');
@@ -268,77 +286,6 @@ sessionClose.addEventListener('click', () => {
 });
 
 // === SWAP TOOLS ===
-
-sessionSwap.addEventListener('click', () => {
-    if (state.streaming || sessionSwap.disabled) return;
-    requestSwap();
-});
-
-async function requestSwap() {
-    sessionSwap.disabled = true;
-
-    // Show typing indicator while fetching
-    const loadingDiv = document.createElement('div');
-    loadingDiv.className = 'typing';
-    loadingDiv.innerHTML = '<span></span><span></span><span></span>';
-    messagesEl.appendChild(loadingDiv);
-    scrollToBottom();
-
-    try {
-        const res = await fetch('/api/swap-tools', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                mode: state.mode,
-                exercise: state.exercise,
-                messages: state.messages
-            })
-        });
-
-        const data = await res.json();
-        loadingDiv.remove();
-
-        if (data.error || !data.tools) {
-            appendMessage('agent', "I wasn't able to suggest tools right now — try again.");
-            sessionSwap.disabled = false;
-            return;
-        }
-
-        // Render swap suggestion card
-        const swapDiv = document.createElement('div');
-        swapDiv.className = 'swap-suggestions';
-
-        const transitionP = document.createElement('p');
-        transitionP.className = 'swap-transition';
-        transitionP.textContent = data.transition || 'Here are two tools that could serve you well from here:';
-        swapDiv.appendChild(transitionP);
-
-        const toolsDiv = document.createElement('div');
-        toolsDiv.className = 'swap-tools';
-
-        data.tools.forEach(tool => {
-            const btn = document.createElement('button');
-            btn.className = `swap-suggest-btn mode-${tool.mode}`;
-            btn.innerHTML = `
-                <span class="swap-suggest-stage">${MODE_LABELS[tool.mode] || tool.mode}</span>
-                <span class="swap-suggest-name">${tool.name}</span>
-                <span class="swap-suggest-reason">${tool.reason}</span>
-            `;
-            btn.addEventListener('click', () => swapToTool(tool.mode, tool.exercise, swapDiv));
-            toolsDiv.appendChild(btn);
-        });
-
-        swapDiv.appendChild(toolsDiv);
-        messagesEl.appendChild(swapDiv);
-        scrollToBottom();
-
-    } catch (err) {
-        loadingDiv.remove();
-        appendMessage('agent', 'Connection error — please try again.');
-    }
-
-    sessionSwap.disabled = false;
-}
 
 function swapToTool(mode, exercise, swapEl) {
     // Preserve conversation history
@@ -362,14 +309,10 @@ function swapToTool(mode, exercise, swapEl) {
     reportCard.classList.add('hidden');
     reportCard.classList.remove('report-preview');
     reportUnlock.classList.add('hidden');
-    continueStage.classList.add('hidden');
     wadeCta.classList.add('hidden');
     reportCta.classList.remove('hidden');
     reportCtaBtn.disabled = true;
     reportCtaBtn.textContent = 'Talk to Wayde to build your report';
-
-    // Prior conversation carries across — swap is available immediately
-    sessionSwap.disabled = false;
 
     // Remove swap suggestion card from chat
     if (swapEl) swapEl.remove();
@@ -499,9 +442,9 @@ function maybeShowReportCta() {
         reportCtaBtn.disabled = false;
         reportCtaBtn.textContent = 'See your session report →';
     }
-    // Enable swap once user has shared their challenge (2 exchanges = kickoff + first real reply)
+    // Unlock stage dot navigation after first real exchange
     if (state.exchangeCount >= 2) {
-        sessionSwap.disabled = false;
+        updateStageProgress(state.mode);
     }
 }
 
@@ -544,7 +487,6 @@ function restoreSession(session) {
     sessionMode.textContent = MODE_LABELS[state.mode] || state.mode;
     sessionExercise.textContent = EXERCISE_LABELS[state.exercise] || state.exercise;
     modeLabel.textContent = (EXERCISE_LABELS[state.exercise] || state.exercise) + ' · ';
-    sessionSwap.disabled = state.exchangeCount < 2;
     reportCta.classList.remove('hidden');
     updateStageProgress(state.mode);
 
@@ -604,44 +546,8 @@ function renderWrapPrompt() {
         continueWrapBtn.addEventListener('click', () => {
             const n = NEXT_STAGE[state.mode];
             if (!n) return;
-
-            const prevMessages = [...state.messages];
-            const prevExercise = EXERCISE_LABELS[state.exercise] || state.exercise;
-            const nextExName = EXERCISE_LABELS[n.exercise] || n.exercise;
-
-            // Transition to next stage — carry conversation, no report required
-            state.mode = n.mode;
-            state.exercise = n.exercise;
-            state.exchangeCount = 0;
-            state.reportGenerated = false;
-            state.reportText = '';
-
-            sessionBar.dataset.mode = n.mode;
-            sessionMode.textContent = MODE_LABELS[n.mode] || n.mode;
-            sessionExercise.textContent = EXERCISE_LABELS[n.exercise] || n.exercise;
-            modeLabel.textContent = (EXERCISE_LABELS[n.exercise] || n.exercise) + ' · ';
-            updateStageProgress(n.mode);
-
-            reportCard.classList.add('hidden');
-            reportCard.classList.remove('report-preview');
-            reportUnlock.classList.add('hidden');
-            continueStage.classList.add('hidden');
-            wadeCta.classList.add('hidden');
-            $('#reportDownloadBtn').classList.add('hidden');
-            $('#reportShareBtn').classList.add('hidden');
-            reportCta.classList.remove('hidden');
-            reportCtaBtn.disabled = true;
-            reportCtaBtn.textContent = 'Talk to Wayde to build your report';
-            sessionSwap.disabled = false;
-
             wrapDiv.remove();
-
-            state.messages = [
-                ...prevMessages,
-                { role: 'user', content: `I've completed ${prevExercise}. Let's move on to ${nextExName} — pick up from what we've discovered and start this next exercise.` }
-            ];
-
-            streamResponse();
+            navigateToStage(n.mode);
         });
     }
 
@@ -838,16 +744,8 @@ reportCtaBtn.addEventListener('click', async () => {
 function revealFullReport() {
     reportCard.classList.remove('report-preview');
     reportUnlock.classList.add('hidden');
+    reportCta.classList.add('hidden'); // hide footer CTA — report is now visible
     wadeCta.classList.remove('hidden');
-
-    // Show continue button if there's a next stage
-    const next = NEXT_STAGE[state.mode];
-    if (next) {
-        const nextModeName = MODE_LABELS[next.mode] || next.mode;
-        const nextExName = EXERCISE_LABELS[next.exercise] || next.exercise;
-        continueBtn.textContent = `Continue to ${nextModeName} — ${nextExName} →`;
-        continueStage.classList.remove('hidden');
-    }
 
     // Reveal report action buttons
     $('#reportDownloadBtn').classList.remove('hidden');
@@ -896,28 +794,6 @@ leadForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const ok = handleLeadSubmit($('#leadName'), $('#leadEmail'), $('#leadCompany'), $('#leadRole'), leadSubmit);
     if (ok) leadModal.classList.add('hidden');
-});
-
-// === CONTINUE TO NEXT STAGE ===
-
-continueBtn.addEventListener('click', () => {
-    const next = NEXT_STAGE[state.mode];
-    if (!next) return;
-
-    const prevStage = MODE_LABELS[state.mode] || state.mode;
-    const prevExercise = EXERCISE_LABELS[state.exercise] || state.exercise;
-    const nextExercise = EXERCISE_LABELS[next.exercise] || next.exercise;
-
-    // Save current stage to project context
-    state.projectContext.push({
-        stage: prevStage,
-        exercise: prevExercise,
-        report: state.reportText
-    });
-
-    // Bridging message so Wayde connects previous findings to the new exercise
-    const bridgeMsg = `I've just finished ${prevExercise} (${prevStage} stage). Please start ${nextExercise}, building directly on what I discovered.`;
-    startExercise(next.mode, next.exercise, bridgeMsg);
 });
 
 // === REPORT PDF DOWNLOAD ===

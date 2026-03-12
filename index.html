@@ -14,24 +14,21 @@
         <img class="logo" src="logo.png" alt="Wade Institute">
     </header>
 
-    <!-- Active session bar (hidden until an exercise is selected) -->
+    <!-- Active session bar with inline stage progress (hidden until an exercise is selected) -->
     <div class="session-bar hidden" id="sessionBar">
         <span class="session-mode" id="sessionMode">Clarify</span>
         <span class="session-sep">›</span>
         <span class="session-exercise" id="sessionExercise">Five Whys</span>
-        <button class="session-swap" id="sessionSwap" title="Switch to a different tool">swap tool</button>
+        <div class="stage-progress" id="stageProgress">
+            <div class="stage-step" data-stage="reframe"><span class="stage-dot"></span><span class="stage-name">Clarify</span></div>
+            <div class="stage-conn"></div>
+            <div class="stage-step" data-stage="ideate"><span class="stage-dot"></span><span class="stage-name">Ideate</span></div>
+            <div class="stage-conn"></div>
+            <div class="stage-step" data-stage="debate"><span class="stage-dot"></span><span class="stage-name">Validate</span></div>
+            <div class="stage-conn"></div>
+            <div class="stage-step" data-stage="framework"><span class="stage-dot"></span><span class="stage-name">Develop</span></div>
+        </div>
         <button class="session-close" id="sessionClose" title="Back to menu">✕</button>
-    </div>
-
-    <!-- Stage progress strip (shown during active session) -->
-    <div class="stage-progress hidden" id="stageProgress">
-        <div class="stage-step" data-stage="reframe"><span class="stage-dot"></span><span class="stage-name">Clarify</span></div>
-        <div class="stage-conn"></div>
-        <div class="stage-step" data-stage="ideate"><span class="stage-dot"></span><span class="stage-name">Ideate</span></div>
-        <div class="stage-conn"></div>
-        <div class="stage-step" data-stage="debate"><span class="stage-dot"></span><span class="stage-name">Validate</span></div>
-        <div class="stage-conn"></div>
-        <div class="stage-step" data-stage="framework"><span class="stage-dot"></span><span class="stage-name">Develop</span></div>
     </div>
 
     <main class="chat-area" id="chatArea">
@@ -198,11 +195,6 @@
             </form>
         </div>
 
-        <!-- Continue to next stage (shown after report) -->
-        <div class="continue-stage hidden" id="continueStage">
-            <button class="continue-stage-btn" id="continueBtn">Continue to next stage →</button>
-        </div>
-
         <!-- Wade team conversation CTA (shown after report) -->
         <div class="wade-cta hidden" id="wadeCta">
             <p class="wade-cta-text">Interested in talking to a member of the Wade team about your innovation challenge?</p>
@@ -258,6 +250,6 @@
         </div>
     </footer>
 
-    <script src="app.js?v=21"></script>
+    <script src="app.js?v=22"></script>
 </body>
 </html>
