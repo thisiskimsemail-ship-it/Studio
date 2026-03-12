@@ -1,10 +1,13 @@
 import os
 import json
 import uuid
+import time
 import smtplib
+import urllib.request
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from flask import Flask, request, Response, send_from_directory, jsonify
 from dotenv import load_dotenv
 import anthropic
@@ -447,6 +450,18 @@ def chat():
             + context_sections
         )
 
+    # Inject live Wade programs/events so Claude can reference them in conversation
+    live_programs = fetch_wade_programs()
+    if live_programs:
+        system_prompt += (
+            "\n\n---\nLIVE WADE PROGRAMS & EVENTS (fetched now from wadeinstitute.org.au):\n"
+            + live_programs
+            + "\n\nWhen it is genuinely relevant to what the person is working on — "
+            "at the END of a response, after your main coaching content — mention 1 specific "
+            "Wade program or upcoming event with its full markdown link. Keep it to one sentence. "
+            "Only include it when it's a natural fit; skip it if nothing is relevant."
+        )
+
     # Add end-of-exercise wrap signal for non-routing modes
     if mode != 'routing':
         system_prompt += (
@@ -476,6 +491,107 @@ def chat():
                     headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
 
+# === WADE WEBSITE SCRAPER ===
+
+_wade_cache = {'data': None, 'fetched_at': 0}
+_WADE_CACHE_TTL = 0  # always fetch fresh — site updated daily
+
+
+class _LinkExtractor(HTMLParser):
+    """Extract unique anchor links matching a URL pattern."""
+    def __init__(self, pattern):
+        super().__init__()
+        self.pattern = pattern
+        self.found = {}  # url -> link text
+        self._cur = None
+        self._buf = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'a':
+            href = dict(attrs).get('href', '')
+            if self.pattern in href:
+                self._cur = href
+                self._buf = []
+
+    def handle_data(self, data):
+        if self._cur:
+            self._buf.append(data.strip())
+
+    def handle_endtag(self, tag):
+        if tag == 'a' and self._cur:
+            text = ' '.join(t for t in self._buf if t)
+            if text and len(text) < 80 and self._cur not in self.found:
+                self.found[self._cur] = text
+            self._cur = None
+
+
+def _fetch_html(url):
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=8) as r:
+            return r.read().decode('utf-8', errors='replace')
+    except Exception:
+        return ''
+
+
+_SKIP_TITLES = {'learn more', 'apply now', 'find out more', 'programs',
+                'entrepreneurs', 'events', 'register', 'book now', 'back'}
+_SKIP_URLS = {
+    'https://wadeinstitute.org.au/programs/entrepreneurs',
+    'https://wadeinstitute.org.au/programs',
+    'https://wadeinstitute.org.au/events',
+}
+
+
+def fetch_wade_programs():
+    """Return a live markdown string of current Wade programs and events (cached 1hr)."""
+    now = time.time()
+    if _wade_cache['data'] is not None and now - _wade_cache['fetched_at'] < _WADE_CACHE_TTL:
+        return _wade_cache['data']
+
+    lines = []
+
+    # --- Programs ---
+    html = _fetch_html('https://wadeinstitute.org.au/programs/entrepreneurs/')
+    parser = _LinkExtractor('/programs/entrepreneurs/')
+    parser.feed(html)
+    seen = set()
+    for url, title in parser.found.items():
+        if not url.startswith('http'):
+            url = 'https://wadeinstitute.org.au' + url
+        norm = url.rstrip('/')
+        if norm in _SKIP_URLS or title.lower() in _SKIP_TITLES:
+            continue
+        if norm not in seen:
+            seen.add(norm)
+            lines.append(f'- **[{title}]({url})**')
+
+    # --- Events ---
+    html = _fetch_html('https://wadeinstitute.org.au/events/')
+    event_lines = []
+    for pattern in ('/events/', 'events.humanitix.com'):
+        ep = _LinkExtractor(pattern)
+        ep.feed(html)
+        for url, title in ep.found.items():
+            if not url.startswith('http'):
+                url = 'https://wadeinstitute.org.au' + url
+            if title.lower() in _SKIP_TITLES or len(title) < 6:
+                continue
+            entry = f'- **[{title}]({url})**'
+            if entry not in event_lines:
+                event_lines.append(entry)
+
+    result = ''
+    if lines:
+        result += 'Current programs:\n' + '\n'.join(lines)
+    if event_lines:
+        result += '\n\nUpcoming events:\n' + '\n'.join(event_lines[:8])
+
+    _wade_cache['data'] = result or None
+    _wade_cache['fetched_at'] = now
+    return _wade_cache['data']
+
+
 # === REPORT GENERATION ===
 
 REPORT_PROMPT = """You are producing an executive coaching summary for a session at the Wade Institute of Entrepreneurship.
@@ -500,15 +616,9 @@ Write it the way a senior executive coach writes to a CEO after a deep working s
 - The remaining steps should be equally concrete and time-bound
 
 ### Wade Institute — Programs Worth Exploring
-Recommend 1-2 of the most contextually relevant Wade programs. Write one sentence explaining why it fits this person's specific challenge and situation. Only recommend programs that are genuinely relevant — if none fit well, say so briefly.
+Recommend 1-2 of the most contextually relevant Wade programs or upcoming events. Write one sentence explaining why it fits this person's specific challenge and situation. Only recommend things that are genuinely relevant — if none fit well, say so briefly. Always render each recommendation as a markdown link so the reader can go directly to the page.
 
-Available programs:
-- **Think Like an Entrepreneur** — 3-day immersive, $4,500. For leaders and intrapreneurs building entrepreneurial skills inside organisations. Next intake: June 2026. wadeinstitute.org.au
-- **Growth Engine** — 3-day immersive, $4,500. For scale-up founders and CEOs navigating the next phase of growth — diagnosing where growth models break down, stress-testing positioning, refining go-to-market strategy. Next intake: May 2026. wadeinstitute.org.au
-- **The AI Conundrum** — For leaders grappling with AI's strategic and operational impact on their business. wadeinstitute.org.au
-- **In Residence** — Residential entrepreneurship program for those ready for deep, full-time immersion. wadeinstitute.org.au
-- **Master of Entrepreneurship** — University of Melbourne postgraduate degree, co-delivered at Wade Institute. For those committed to entrepreneurship as a long-term practice. wadeinstitute.org.au
-- **Bespoke Programs** — Wade's team can co-design a custom program for your organisation or team. Contact: enquiries@wadeinstitute.org.au
+{WADE_PROGRAMS_PLACEHOLDER}
 
 ### About This Session
 One sentence: exercise used, why it's effective, and how it fits this stage of the journey.
@@ -623,7 +733,19 @@ def generate_report():
     mode_name = MODE_NAMES.get(mode, mode)
     exercise_name = EXERCISE_NAMES.get(exercise, exercise)
 
-    system = REPORT_PROMPT + f"\n\nThis session used the **{exercise_name}** exercise from the **{mode_name}** module."
+    live_programs = fetch_wade_programs()
+    fallback = (
+        'Current programs:\n'
+        '- **[Think Like an Entrepreneur](https://wadeinstitute.org.au/programs/entrepreneurs/think-like-an-entrepreneur/)**\n'
+        '- **[Growth Engine](https://wadeinstitute.org.au/programs/entrepreneurs/growth-engine/)**\n'
+        '- **[The AI Conundrum](https://wadeinstitute.org.au/programs/entrepreneurs/the-ai-conundrum/)**\n'
+        '- **[In Residence](https://wadeinstitute.org.au/programs/entrepreneurs/in-residence/)**\n'
+        '- **[Master of Entrepreneurship](https://wadeinstitute.org.au/programs/entrepreneurs/master-of-entrepreneurship/)**'
+    )
+    programs_block = live_programs or fallback
+
+    system = REPORT_PROMPT.replace('{WADE_PROGRAMS_PLACEHOLDER}', programs_block)
+    system += f"\n\nThis session used the **{exercise_name}** exercise from the **{mode_name}** module."
 
     # Ensure last message is from user (API requirement)
     report_messages = list(messages)
