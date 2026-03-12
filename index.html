@@ -176,6 +176,7 @@
             <div class="report-footer">
                 <img class="report-logo" src="logo.png" alt="Wade Institute">
                 <span>Wade Institute of Entrepreneurship</span>
+                <span class="report-copy-notice">A copy of this report has been shared with the Wade Institute team.</span>
             </div>
         </div>
 
@@ -184,9 +185,15 @@
             <button class="continue-stage-btn" id="continueBtn">Continue to next stage →</button>
         </div>
 
+        <!-- Wade team conversation CTA (shown after report) -->
+        <div class="wade-cta hidden" id="wadeCta">
+            <p class="wade-cta-text">Interested in talking to a member of the Wade team about your innovation challenge?</p>
+            <a class="wade-cta-btn" href="mailto:enquiries@wadeinstitute.org.au">Get in touch with Wade →</a>
+        </div>
+
         <!-- Routing back to tools (shown after Wayde's tool suggestion) -->
         <div class="routing-back hidden" id="routingBack">
-            <button class="routing-back-btn" id="routingBackBtn">↑ Browse all tools</button>
+            <button class="routing-back-btn" id="routingBackBtn">← Back to tools</button>
         </div>
     </main>
 
@@ -194,7 +201,7 @@
     <div class="lead-modal-overlay hidden" id="leadModal">
         <div class="lead-modal">
             <h2 class="lead-modal-title">Your session report is ready</h2>
-            <p class="lead-modal-sub">Enter your details to receive the report and hear about relevant Wade Institute programs.</p>
+            <p class="lead-modal-sub">Enter your details to receive your report. A copy will also be shared with the Wade Institute team.</p>
             <form class="lead-form" id="leadForm">
                 <input type="text" class="lead-input" id="leadName" placeholder="Name" required>
                 <input type="email" class="lead-input" id="leadEmail" placeholder="Email" required>
@@ -202,7 +209,6 @@
                 <input type="text" class="lead-input" id="leadRole" placeholder="Role">
                 <button type="submit" class="lead-submit" id="leadSubmit">Send me the report</button>
             </form>
-            <p class="lead-disclaimer">Wade Institute may follow up with relevant program opportunities.</p>
         </div>
     </div>
 
@@ -222,6 +228,6 @@
         </p>
     </footer>
 
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=13"></script>
 </body>
 </html>

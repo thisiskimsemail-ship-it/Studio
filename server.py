@@ -1,5 +1,8 @@
 import os
 import json
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from datetime import datetime, timezone
 from flask import Flask, request, Response, send_from_directory, jsonify
 from dotenv import load_dotenv
@@ -14,7 +17,9 @@ client = anthropic.Anthropic()
 
 WADE_IDENTITY = """You are a creative thinking agent at the Wade Institute of Entrepreneurship, Ormond College, University of Melbourne. You help founders, intrapreneurs, and innovators think more clearly and boldly.
 
-Your tone is direct, warm, and intellectually rigorous — like a great mentor who challenges but supports. Australian directness, not corporate jargon. You use concrete examples, not abstractions. You always end with a provocative question or actionable next step — never a passive summary."""
+Your tone is direct, warm, and intellectually rigorous — like a great mentor who challenges but supports. Australian directness, not corporate jargon. You use concrete examples, not abstractions. You always end with a provocative question or actionable next step — never a passive summary.
+
+When beginning a new exercise, open with one sentence that names the tool and what it does in plain language — then ask your first question."""
 
 SYSTEM_PROMPTS = {
 
@@ -346,20 +351,19 @@ After all five principles, synthesise: Given your means (bird-in-hand), what is 
 
     "routing:suggest": WADE_IDENTITY + """
 
-Someone has arrived at your coaching session and typed something before selecting an exercise. They may not know where to start, or they want help choosing the right thinking tool for where they are.
+Someone has typed something before selecting an exercise. Your job is to quickly understand where they are in their thinking and point them to the right tool — in at most 2 exchanges.
 
-Read what they've shared and respond in 3-4 short sentences:
-1. Acknowledge what they've described — make them feel heard and seen
-2. Name the stage that fits best (Clarify / Ideate / Validate / Develop) and why in one sentence
-3. Recommend one specific tool from that stage and what it will help them do
+Rules:
+1. First response: Acknowledge what they've shared in 1 sentence, then ask ONE situational question to understand their stage. Ask about WHERE they are in their process — not WHY the problem exists. Good questions sound like: "Are you still trying to get clear on the problem, or do you have a direction and need to generate ideas?" or "Have you got an idea already, or are you still figuring out what to build?" Avoid diagnostic "why?" questions — those feel like coaching exercises, not intake.
+2. Second response: Make your recommendation. Do not ask another question. Name 1-2 tools and briefly say why each fits. Then end your message with the tag below.
 
-Available tools:
-- Clarify: Five Whys, Jobs to Be Done, Empathy Map
-- Ideate: How Might We, SCAMPER, Crazy 8s
-- Validate: Pre-Mortem, Devil's Advocate, Rapid Experiment
-- Develop: Lean Canvas, Effectuation, Analogical Thinking
+When recommending, end your message with this tag on its own line:
+[SUGGEST: key1, key2]
 
-Be warm, direct and specific — like a great coach who instantly sees where someone is. No bullet points. No markdown. Write conversationally. End with a nudge to pick that tool from the menu above.""",
+Use only these exact keys:
+five-whys, jtbd, empathy-map, hmw, scamper, crazy-8s, pre-mortem, devils-advocate, rapid-experiment, lean-canvas, effectuation, analogical
+
+Be warm and conversational. No bullet points. No markdown headers.""",
 
     "debate:rapid-experiment": WADE_IDENTITY + """
 
@@ -417,6 +421,15 @@ def chat():
     prompt_key = f"{mode}:{exercise}" if exercise else mode
     system_prompt = SYSTEM_PROMPTS.get(prompt_key, SYSTEM_PROMPTS['reframe:five-whys'])
 
+    # In routing mode: force a recommendation after the user has replied once
+    if mode == 'routing' and len([m for m in messages if m.get('role') == 'user']) >= 2:
+        system_prompt += (
+            "\n\nIMPORTANT: You now have enough context. "
+            "Make your tool recommendation in this response. "
+            "Do NOT ask another question. "
+            "End your message with the [SUGGEST: key1, key2] tag."
+        )
+
     project_context = data.get('project_context', [])
     if project_context:
         context_sections = "\n\n".join([
@@ -451,28 +464,45 @@ def chat():
 
 # === REPORT GENERATION ===
 
-REPORT_PROMPT = """You are summarising a coaching session from the Wade Institute of Entrepreneurship's AI innovation coach, Wayde.
+REPORT_PROMPT = """You are producing an executive coaching summary for a session at the Wade Institute of Entrepreneurship.
 
-Review the conversation and produce a structured session report. Use markdown formatting.
+Write it the way a senior executive coach writes to a CEO after a deep working session: clear, direct, specific, challenging, warm. No jargon. Respect their intelligence and their time. Use markdown.
 
-## Session Report
+## Session Summary
 
 ### The Challenge
-Summarise the problem or idea the user brought to this session in 2-3 sentences.
+2-3 sentences. What the person brought to this session — their situation, problem, or idea.
 
-### Key Insights
-List the 3-5 most important insights that emerged during the exercise. Be specific — reference what the user actually said, not generic advice.
+### What Emerged
+3-5 key insights from the conversation. Be specific — reference what the user actually said or discovered. Not generic advice. Each insight in 1-3 sentences.
 
-### What We Uncovered
-A brief paragraph about the deeper patterns, root causes, or assumptions that surfaced through the exercise.
+### Questions Worth Sitting With
+2-3 open, provocative questions that the session surfaced but didn't fully resolve. These are outlier areas, blind spots, or tensions worth returning to. Not rhetorical — genuinely challenging. One sentence each.
 
-### Recommended Next Steps
-List 3-4 concrete, actionable next steps the user can take THIS WEEK. Be specific and practical.
+### Recommended Actions
+5-7 concrete, specific next steps. You MUST include:
+- At least one hands-on, market-facing action (a real customer conversation, a cheap prototype, a live test — something that generates external signal, not just internal thinking)
+- At least one network-building action (a specific type of person to find, a community to join, an event to attend, a mentor to seek out)
+- The remaining steps should be equally concrete and time-bound
 
-### About This Exercise
-One sentence explaining what exercise was used and why it's effective.
+### Wade Institute — Programs Worth Exploring
+Recommend 1-2 of the most contextually relevant Wade programs. Write one sentence explaining why it fits this person's specific challenge and situation. Only recommend programs that are genuinely relevant — if none fit well, say so briefly.
 
-Keep the tone warm, direct, and encouraging — like a mentor's notes after a great session. No corporate jargon."""
+Available programs:
+- **Think Like an Entrepreneur** — 3-day immersive, $4,500. For leaders and intrapreneurs building entrepreneurial skills inside organisations. Next intake: June 2026. wadeinstitute.org.au
+- **Growth Engine** — 3-day immersive, $4,500. For scale-up founders and CEOs navigating the next phase of growth — diagnosing where growth models break down, stress-testing positioning, refining go-to-market strategy. Next intake: May 2026. wadeinstitute.org.au
+- **The AI Conundrum** — For leaders grappling with AI's strategic and operational impact on their business. wadeinstitute.org.au
+- **In Residence** — Residential entrepreneurship program for those ready for deep, full-time immersion. wadeinstitute.org.au
+- **Master of Entrepreneurship** — University of Melbourne postgraduate degree, co-delivered at Wade Institute. For those committed to entrepreneurship as a long-term practice. wadeinstitute.org.au
+- **Bespoke Programs** — Wade's team can co-design a custom program for your organisation or team. Contact: enquiries@wadeinstitute.org.au
+
+### About This Session
+One sentence: exercise used, why it's effective, and how it fits this stage of the journey.
+
+---
+*A copy of this report has been shared with the Wade Institute team.*
+
+Keep the report warm but rigorous. No filler. Every sentence should earn its place."""
 
 EXERCISE_NAMES = {
     'five-whys': 'Five Whys',
@@ -520,7 +550,7 @@ def generate_report():
     try:
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=2048,
+            max_tokens=3000,
             system=system,
             messages=report_messages,
         )
@@ -539,6 +569,41 @@ def generate_report():
 # === LEAD CAPTURE ===
 
 LEADS_FILE = os.path.join(os.path.dirname(__file__), 'leads.json')
+
+
+def _notify_wade(lead):
+    """Email the report to Wade when a new lead submits. Silent no-op if SMTP not configured."""
+    notify_email = os.environ.get('WADE_NOTIFY_EMAIL')
+    smtp_host = os.environ.get('SMTP_HOST')
+    smtp_user = os.environ.get('SMTP_USER')
+    smtp_pass = os.environ.get('SMTP_PASS')
+    if not all([notify_email, smtp_host, smtp_user, smtp_pass]):
+        return  # Not configured — skip silently
+    smtp_port = int(os.environ.get('SMTP_PORT', 587))
+
+    subject = f"New Wayde Session: {lead['name']} — {lead['exercise']} ({lead['mode']})"
+    body = (
+        f"New session report from Wayde.\n\n"
+        f"Name: {lead['name']}\n"
+        f"Email: {lead['email']}\n"
+        f"Company: {lead['company']}\n"
+        f"Role: {lead['role']}\n"
+        f"Stage: {lead['mode']}\n"
+        f"Exercise: {lead['exercise']}\n"
+        f"Time: {lead['timestamp']}\n\n"
+        f"--- REPORT ---\n\n"
+        f"{lead['report']}"
+    )
+    msg = MIMEMultipart()
+    msg['From'] = smtp_user
+    msg['To'] = notify_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+
+    with smtplib.SMTP(smtp_host, smtp_port) as server:
+        server.starttls()
+        server.login(smtp_user, smtp_pass)
+        server.send_message(msg)
 
 @app.route('/api/lead', methods=['POST'])
 def capture_lead():
@@ -569,6 +634,11 @@ def capture_lead():
 
     with open(LEADS_FILE, 'w') as f:
         json.dump(leads, f, indent=2)
+
+    try:
+        _notify_wade(lead)
+    except Exception:
+        pass  # Never break lead capture if email fails
 
     return jsonify({'success': True})
 

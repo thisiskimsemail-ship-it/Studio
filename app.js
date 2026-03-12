@@ -21,6 +21,54 @@ const MODE_LABELS = {
     framework: 'Develop'
 };
 
+// Reverse map: exercise key → mode (used for routing suggestions)
+const EXERCISE_MODE = {
+    'five-whys':        'reframe',
+    'jtbd':             'reframe',
+    'empathy-map':      'reframe',
+    'hmw':              'ideate',
+    'scamper':          'ideate',
+    'crazy-8s':         'ideate',
+    'pre-mortem':       'debate',
+    'devils-advocate':  'debate',
+    'rapid-experiment': 'debate',
+    'lean-canvas':      'framework',
+    'effectuation':     'framework',
+    'analogical':       'framework'
+};
+
+// Exercise descriptions (mirror of HTML card text)
+const EXERCISE_DESCS = {
+    'five-whys':        'Ask "why?" five times to move past symptoms and find what\'s really causing the problem. From Toyota\'s production system, taught at Harvard Business School.',
+    'jtbd':             'Understand what your customer is actually trying to accomplish. People don\'t buy products — they hire them to make progress. Clayton Christensen\'s framework, core to YC\'s approach.',
+    'empathy-map':      'Deeply understand your user before defining the problem — what they say, think, do, and feel. The gap between those is where the real opportunity lives. Stanford d.school\'s Empathise stage.',
+    'hmw':              'Reframe your problem as an opportunity and open up new directions before committing to one. Stanford d.school\'s bridge between defining a problem and generating solutions.',
+    'scamper':          'A structured checklist for generating ideas: Substitute, Combine, Adapt, Modify, Put to other uses, Eliminate, Reverse. Alex Osborn\'s creativity method, widely used in product design.',
+    'crazy-8s':         'Generate 8 distinct ideas fast. Forces quantity over quality and breaks your fixation on the first "good" idea. The cornerstone of Google Ventures\' Design Sprint methodology.',
+    'pre-mortem':       'Imagine your venture failed. Work backwards to surface the risks you\'d miss from an optimistic mindset. Research shows it increases risk identification by 30%.',
+    'devils-advocate':  'Stress-test your idea against its sharpest critic. Best used when your team is too aligned — or you need to find the holes before a pitch or major commitment.',
+    'rapid-experiment': 'Design the cheapest, fastest test that would kill your riskiest assumption. Validate before you build — the core principle behind Lean Startup.',
+    'lean-canvas':      'Your entire business model on one page. Start with the problem, not the solution — then identify which assumptions you\'re most uncertain about.',
+    'effectuation':     'Don\'t start with a goal — start with what you already have. Expert entrepreneurs build from their own skills, network, and resources. By Saras Sarasvathy.',
+    'analogical':       'Borrow solutions from other domains. How did nature solve this? How did another industry handle it? The technique behind many of history\'s most disruptive innovations — used by IDEO and DARPA.'
+};
+
+// Suggested prompt framings shown as input placeholder
+const EXERCISE_HINTS = {
+    'five-whys':        'e.g. "Our sign-up rate drops off sharply after the first week"',
+    'jtbd':             'e.g. "I\'m building a scheduling tool for freelancers"',
+    'empathy-map':      'e.g. "My user is a first-time founder looking for their first customers"',
+    'hmw':              'e.g. "People try our product but don\'t convert to paid"',
+    'scamper':          'e.g. "I have an idea for a subscription meal kit for athletes"',
+    'crazy-8s':         'e.g. "I want to redesign the onboarding flow for a B2B SaaS"',
+    'pre-mortem':       'e.g. "We\'re about to launch a marketplace for local tradespeople"',
+    'devils-advocate':  'e.g. "I\'m building an AI hiring assistant for small businesses"',
+    'rapid-experiment': 'e.g. "I think founders will pay for a curated co-founder matching service"',
+    'lean-canvas':      'e.g. "I\'m building a platform connecting mentors with early-stage founders"',
+    'effectuation':     'e.g. "I\'m a designer with a strong network in healthcare — not sure where to start"',
+    'analogical':       'e.g. "I\'m trying to solve the cold-start problem for a two-sided marketplace"'
+};
+
 // Next recommended stage after each mode
 const NEXT_STAGE = {
     reframe:   { mode: 'ideate',     exercise: 'hmw' },
@@ -66,6 +114,7 @@ const leadForm = $('#leadForm');
 const leadSubmit = $('#leadSubmit');
 const continueStage = $('#continueStage');
 const continueBtn = $('#continueBtn');
+const wadeCta = $('#wadeCta');
 const routingBack = $('#routingBack');
 const routingBackBtn = $('#routingBackBtn');
 
@@ -80,6 +129,16 @@ $$('.card-exercise-btn').forEach(btn => {
 });
 
 function startExercise(mode, exercise) {
+    // If transitioning from routing, use the user's own description as the exercise kickoff
+    // so Wayde can respond in context without asking them to repeat themselves
+    let autoStartMsg = null;
+    if (state.routing && state.messages.length > 0) {
+        autoStartMsg = state.messages
+            .filter(m => m.role === 'user')
+            .map(m => m.content)
+            .join('\n\n');
+    }
+
     state.mode = mode;
     state.exercise = exercise;
     state.messages = [];
@@ -106,8 +165,29 @@ function startExercise(mode, exercise) {
     reportCard.classList.add('hidden');
     leadModal.classList.add('hidden');
     continueStage.classList.add('hidden');
+    wadeCta.classList.add('hidden');
     routingBack.classList.add('hidden');
-    inputField.focus();
+
+    if (autoStartMsg) {
+        // Use the user's actual description as the first message so Wayde skips
+        // "what are you working on?" and responds directly in context
+        appendMessage('user', autoStartMsg);
+        state.messages = [{ role: 'user', content: autoStartMsg }];
+        streamResponse();
+    } else {
+        // Show exercise description intro card
+        const desc = EXERCISE_DESCS[exercise];
+        if (desc) {
+            const introDiv = document.createElement('div');
+            introDiv.className = 'msg-intro';
+            introDiv.dataset.mode = mode;
+            introDiv.innerHTML = `<div class="msg-intro-label">${EXERCISE_LABELS[exercise] || exercise}</div>${desc}`;
+            messagesEl.appendChild(introDiv);
+        }
+        // Set a tool-specific placeholder hint
+        inputField.placeholder = EXERCISE_HINTS[exercise] || 'Describe your challenge or idea...';
+        inputField.focus();
+    }
 }
 
 // === BACK TO MENU ===
@@ -127,11 +207,13 @@ sessionClose.addEventListener('click', () => {
     // Clear messages, input, report elements, and project context
     messagesEl.innerHTML = '';
     inputField.value = '';
+    inputField.placeholder = 'Describe your challenge or idea...';
     modeLabel.textContent = '';
     reportCta.classList.add('hidden');
     reportCard.classList.add('hidden');
     leadModal.classList.add('hidden');
     continueStage.classList.add('hidden');
+    wadeCta.classList.add('hidden');
     routingBack.classList.add('hidden');
     state.projectContext = [];
     state.routing = false;
@@ -149,7 +231,7 @@ function startRouting(text) {
     state.reportText = '';
 
     welcome.classList.add('hidden');
-    routingBack.classList.add('hidden');
+    routingBack.classList.remove('hidden'); // show subtle back link immediately
 
     state.messages.push({ role: 'user', content: text });
     appendMessage('user', text);
@@ -172,6 +254,7 @@ routingBackBtn.addEventListener('click', () => {
     welcome.classList.remove('hidden');
     messagesEl.innerHTML = '';
     inputField.value = '';
+    inputField.placeholder = 'Describe your challenge or idea...';
     routingBack.classList.add('hidden');
     chatArea.scrollTop = 0;
 });
@@ -327,9 +410,34 @@ async function streamResponse() {
 
     // Save assistant response
     if (fullText) {
-        state.messages.push({ role: 'assistant', content: fullText });
+        // In routing mode: parse and strip [SUGGEST: key1, key2] tag
+        let suggestedKeys = [];
         if (state.routing) {
-            routingBack.classList.remove('hidden');
+            const suggestMatch = fullText.match(/\[SUGGEST:\s*([^\]]+)\]/);
+            if (suggestMatch) {
+                suggestedKeys = suggestMatch[1].split(',').map(s => s.trim()).filter(k => EXERCISE_MODE[k]);
+                fullText = fullText.replace(/\n?\[SUGGEST:\s*[^\]]+\]/, '').trim();
+                if (agentDiv) agentDiv.innerHTML = renderMarkdown(fullText);
+            }
+        }
+
+        state.messages.push({ role: 'assistant', content: fullText });
+
+        if (state.routing) {
+            // Render inline tool suggestion buttons if Wayde recommended any
+            if (suggestedKeys.length > 0) {
+                const suggestDiv = document.createElement('div');
+                suggestDiv.className = 'routing-suggestions';
+                suggestedKeys.forEach(key => {
+                    const mode = EXERCISE_MODE[key];
+                    const btn = document.createElement('button');
+                    btn.className = `routing-suggest-btn mode-${mode}`;
+                    btn.textContent = EXERCISE_LABELS[key] || key;
+                    btn.addEventListener('click', () => startExercise(mode, key));
+                    suggestDiv.appendChild(btn);
+                });
+                messagesEl.appendChild(suggestDiv);
+            }
             scrollToBottom();
         } else {
             state.exchangeCount++;
@@ -418,6 +526,7 @@ leadForm.addEventListener('submit', async (e) => {
     leadModal.classList.add('hidden');
     reportContent.innerHTML = renderMarkdown(state.reportText);
     reportCard.classList.remove('hidden');
+    wadeCta.classList.remove('hidden');
 
     // Show continue button if there's a next stage
     const next = NEXT_STAGE[state.mode];
