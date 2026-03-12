@@ -104,6 +104,7 @@ const modeLabel = $('#modeLabel');
 const sessionBar = $('#sessionBar');
 const sessionMode = $('#sessionMode');
 const sessionExercise = $('#sessionExercise');
+const sessionSwap = $('#sessionSwap');
 const sessionClose = $('#sessionClose');
 const reportCta = $('#reportCta');
 const reportCtaBtn = $('#reportCtaBtn');
@@ -176,6 +177,9 @@ function startExercise(mode, exercise) {
     reportCtaBtn.disabled = true;
     reportCtaBtn.textContent = 'Talk to Wayde to build your report';
 
+    // Swap button disabled until user has had a real exchange (exchangeCount >= 2)
+    sessionSwap.disabled = true;
+
     if (autoStartMsg) {
         // Use the user's actual description as the first message so Wayde skips
         // "what are you working on?" and responds directly in context
@@ -222,6 +226,7 @@ sessionClose.addEventListener('click', () => {
     inputField.value = ''; sendBtn.disabled = true;
     inputField.placeholder = 'Describe your challenge or idea...';
     modeLabel.textContent = '';
+    sessionSwap.disabled = true;
     reportCta.classList.add('hidden');
     reportCard.classList.add('hidden');
     reportCard.classList.remove('report-preview');
@@ -233,6 +238,123 @@ sessionClose.addEventListener('click', () => {
     state.projectContext = [];
     state.routing = false;
 });
+
+// === SWAP TOOLS ===
+
+sessionSwap.addEventListener('click', () => {
+    if (state.streaming || sessionSwap.disabled) return;
+    requestSwap();
+});
+
+async function requestSwap() {
+    sessionSwap.disabled = true;
+
+    // Show typing indicator while fetching
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'typing';
+    loadingDiv.innerHTML = '<span></span><span></span><span></span>';
+    messagesEl.appendChild(loadingDiv);
+    scrollToBottom();
+
+    try {
+        const res = await fetch('/api/swap-tools', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mode: state.mode,
+                exercise: state.exercise,
+                messages: state.messages
+            })
+        });
+
+        const data = await res.json();
+        loadingDiv.remove();
+
+        if (data.error || !data.tools) {
+            appendMessage('agent', "I wasn't able to suggest tools right now — try again.");
+            sessionSwap.disabled = false;
+            return;
+        }
+
+        // Render swap suggestion card
+        const swapDiv = document.createElement('div');
+        swapDiv.className = 'swap-suggestions';
+
+        const transitionP = document.createElement('p');
+        transitionP.className = 'swap-transition';
+        transitionP.textContent = data.transition || 'Here are two tools that could serve you well from here:';
+        swapDiv.appendChild(transitionP);
+
+        const toolsDiv = document.createElement('div');
+        toolsDiv.className = 'swap-tools';
+
+        data.tools.forEach(tool => {
+            const btn = document.createElement('button');
+            btn.className = `swap-suggest-btn mode-${tool.mode}`;
+            btn.innerHTML = `
+                <span class="swap-suggest-stage">${MODE_LABELS[tool.mode] || tool.mode}</span>
+                <span class="swap-suggest-name">${tool.name}</span>
+                <span class="swap-suggest-reason">${tool.reason}</span>
+            `;
+            btn.addEventListener('click', () => swapToTool(tool.mode, tool.exercise, swapDiv));
+            toolsDiv.appendChild(btn);
+        });
+
+        swapDiv.appendChild(toolsDiv);
+        messagesEl.appendChild(swapDiv);
+        scrollToBottom();
+
+    } catch (err) {
+        loadingDiv.remove();
+        appendMessage('agent', 'Connection error — please try again.');
+    }
+
+    sessionSwap.disabled = false;
+}
+
+function swapToTool(mode, exercise, swapEl) {
+    // Preserve conversation history
+    const previousMessages = [...state.messages];
+
+    // Update state (keep projectContext and routing as-is)
+    state.mode = mode;
+    state.exercise = exercise;
+    state.exchangeCount = 0;
+    state.reportGenerated = false;
+    state.reportText = '';
+
+    // Update session bar labels and colour
+    sessionBar.dataset.mode = mode;
+    sessionMode.textContent = MODE_LABELS[mode] || mode;
+    sessionExercise.textContent = EXERCISE_LABELS[exercise] || exercise;
+    modeLabel.textContent = (EXERCISE_LABELS[exercise] || exercise) + ' · ';
+
+    // Reset report elements
+    reportCard.classList.add('hidden');
+    reportCard.classList.remove('report-preview');
+    reportUnlock.classList.add('hidden');
+    continueStage.classList.add('hidden');
+    wadeCta.classList.add('hidden');
+    reportCta.classList.remove('hidden');
+    reportCtaBtn.disabled = true;
+    reportCtaBtn.textContent = 'Talk to Wayde to build your report';
+
+    // Prior conversation carries across — swap is available immediately
+    sessionSwap.disabled = false;
+
+    // Remove swap suggestion card from chat
+    if (swapEl) swapEl.remove();
+
+    // Carry all prior messages across, add a bridging message
+    const exerciseName = EXERCISE_LABELS[exercise] || exercise;
+    state.messages = [
+        ...previousMessages,
+        { role: 'user', content: `Let's switch to ${exerciseName}. Pick up from what we've covered and start this exercise.` }
+    ];
+
+    // Stream Wayde's response with the new tool's system prompt
+    streamResponse();
+}
 
 // === ROUTING (no tool selected) ===
 
@@ -347,6 +469,10 @@ function maybeShowReportCta() {
     if (state.exchangeCount >= 1 && !state.reportGenerated) {
         reportCtaBtn.disabled = false;
         reportCtaBtn.textContent = 'See your session report →';
+    }
+    // Enable swap once user has shared their challenge (2 exchanges = kickoff + first real reply)
+    if (state.exchangeCount >= 2) {
+        sessionSwap.disabled = false;
     }
 }
 

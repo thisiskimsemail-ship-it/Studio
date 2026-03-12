@@ -527,6 +527,81 @@ MODE_NAMES = {
 }
 
 
+SWAP_PROMPT = """You are a tool recommendation assistant at the Wade Institute of Entrepreneurship.
+
+Given the conversation below, recommend exactly 2 different thinking tools that would genuinely serve this person right now — based on what they've shared, where they seem stuck, and what would move them forward.
+
+Do NOT recommend the tool they're currently using.
+
+Available tools:
+five-whys (Clarify): Ask "why?" five times to find root causes
+jtbd (Clarify): Understand what your customer is truly trying to accomplish
+empathy-map (Clarify): Map what users say, think, do, and feel
+hmw (Ideate): Reframe the problem as "How Might We...?" questions
+scamper (Ideate): Generate ideas using Substitute, Combine, Adapt, Modify, Put to other uses, Eliminate, Reverse
+crazy-8s (Ideate): Generate 8 distinct ideas fast
+pre-mortem (Validate): Imagine failure and work backwards to identify risks
+devils-advocate (Validate): Stress-test the idea against its sharpest critic
+rapid-experiment (Validate): Design the cheapest test to kill the riskiest assumption
+lean-canvas (Develop): Map the key elements of the initiative on one page
+effectuation (Develop): Start with what you have, not a goal
+analogical (Develop): Borrow solutions from other domains
+
+Respond with ONLY valid JSON in this exact format (no markdown, no other text):
+{
+  "transition": "One warm sentence acknowledging what's emerged and why switching tools makes sense.",
+  "tools": [
+    { "mode": "ideate", "exercise": "hmw", "name": "How Might We", "reason": "One specific sentence connecting this tool to what they've just uncovered." },
+    { "mode": "debate", "exercise": "pre-mortem", "name": "Pre-Mortem", "reason": "One specific sentence connecting this tool to what they've just uncovered." }
+  ]
+}"""
+
+
+@app.route('/api/swap-tools', methods=['POST'])
+def swap_tools():
+    data = request.json
+    current_mode = data.get('mode', '')
+    current_exercise = data.get('exercise', '')
+    messages = data.get('messages', [])
+
+    current_name = EXERCISE_NAMES.get(current_exercise, current_exercise)
+    mode_name = MODE_NAMES.get(current_mode, current_mode)
+    prompt = SWAP_PROMPT + f"\n\nCurrent tool: {current_name} ({mode_name} stage). Do NOT recommend this one."
+
+    # Need at least one user message; API requires last message to be from user
+    api_messages = list(messages) if messages else []
+    if not api_messages:
+        api_messages = [{'role': 'user', 'content': 'Please recommend two tools based on our conversation.'}]
+    elif api_messages[-1].get('role') == 'assistant':
+        api_messages.append({'role': 'user', 'content': 'Based on our conversation so far, please recommend two tools.'})
+
+    try:
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=500,
+            system=prompt,
+            messages=api_messages,
+        )
+        text = ''
+        for block in response.content:
+            if hasattr(block, 'text'):
+                text += block.text
+
+        # Strip markdown code fences if Claude wrapped the JSON
+        clean = text.strip()
+        if clean.startswith('```'):
+            clean = clean.split('\n', 1)[-1]  # remove opening fence line
+            clean = clean.rsplit('```', 1)[0]  # remove closing fence
+            clean = clean.strip()
+
+        result = json.loads(clean)
+        return jsonify(result)
+    except json.JSONDecodeError as e:
+        return jsonify({'error': f'Could not parse tool recommendations: {str(e)}', 'raw': text}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/report', methods=['POST'])
 def generate_report():
     data = request.json
