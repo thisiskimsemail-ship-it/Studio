@@ -165,11 +165,6 @@
         </div>
         <div class="messages" id="messages"></div>
 
-        <!-- Report CTA (appears after 3+ exchanges) -->
-        <div class="report-cta hidden" id="reportCta">
-            <button class="report-cta-btn" id="reportCtaBtn">Get your session report →</button>
-        </div>
-
         <!-- Report card (shown after lead capture) -->
         <div class="report-card hidden" id="reportCard">
             <div class="report-content" id="reportContent"></div>
@@ -234,12 +229,17 @@
                 </svg>
             </button>
         </form>
-        <p class="input-hint">
-            <span class="mode-label" id="modeLabel"></span>
-            Wade Institute of Entrepreneurship
-        </p>
+        <div class="input-hint">
+            <span>
+                <span class="mode-label" id="modeLabel"></span>
+                Wade Institute of Entrepreneurship
+            </span>
+            <div class="report-cta hidden" id="reportCta">
+                <button class="report-cta-btn" id="reportCtaBtn">Talk to Wayde to build your report</button>
+            </div>
+        </div>
     </footer>
 
-    <script src="app.js?v=16"></script>
+    <script src="app.js?v=17"></script>
 </body>
 </html>
