@@ -196,54 +196,58 @@ body {
 /* === RESUME BANNER === */
 
 .resume-banner {
-    padding: 0.55rem 1.5rem;
-    border-top: 1px solid rgba(255,255,255,0.07);
-    background: rgba(255,255,255,0.025);
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 50;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem 0.4rem 0.85rem;
+    background: rgba(18, 16, 58, 0.92);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
     animation: fadeIn 0.3s ease;
 }
 
 .resume-banner.hidden { display: none; }
 
 .resume-text {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--text-dim);
+    white-space: nowrap;
 }
-
-.resume-actions { display: flex; gap: 0.5rem; }
 
 .resume-btn {
     background: var(--orange);
     border: none;
-    border-radius: 7px;
+    border-radius: 999px;
     color: white;
     font-family: var(--font);
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    padding: 0.35rem 0.9rem;
+    padding: 0.28rem 0.75rem;
     cursor: pointer;
     transition: opacity 0.2s;
+    white-space: nowrap;
 }
 
 .resume-btn:hover { opacity: 0.85; }
 
 .resume-dismiss {
     background: none;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 7px;
+    border: none;
     color: var(--text-muted);
-    font-family: var(--font);
-    font-size: 0.8rem;
-    padding: 0.35rem 0.9rem;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.35rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: color 0.2s;
+    line-height: 1;
 }
 
-.resume-dismiss:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+.resume-dismiss:hover { color: var(--text); }
 
 /* === WELCOME === */
 .welcome {
