@@ -856,32 +856,101 @@ LEADS_FILE = os.path.join(os.path.dirname(__file__), 'leads.json')
 
 def _notify_wade(lead):
     """Email the report to Wade when a new lead submits. Silent no-op if SMTP not configured."""
-    notify_email = os.environ.get('WADE_NOTIFY_EMAIL')
+    notify_email = os.environ.get('WADE_NOTIFY_EMAIL', 'enquiries@wadeinstitute.org.au')
     smtp_host = os.environ.get('SMTP_HOST')
     smtp_user = os.environ.get('SMTP_USER')
     smtp_pass = os.environ.get('SMTP_PASS')
-    if not all([notify_email, smtp_host, smtp_user, smtp_pass]):
-        return  # Not configured — skip silently
+    if not all([smtp_host, smtp_user, smtp_pass]):
+        return  # SMTP not configured — skip silently
     smtp_port = int(os.environ.get('SMTP_PORT', 587))
 
+    rating_label = {'up': '👍 Positive', 'down': '👎 Negative'}.get(lead.get('rating'), '—')
     subject = f"New Wayde Session: {lead['name']} — {lead['exercise']} ({lead['mode']})"
-    body = (
-        f"New session report from Wayde.\n\n"
+
+    # Plain-text fallback
+    plain = (
+        f"New Wayde session report.\n\n"
         f"Name: {lead['name']}\n"
         f"Email: {lead['email']}\n"
         f"Company: {lead['company']}\n"
         f"Role: {lead['role']}\n"
         f"Stage: {lead['mode']}\n"
         f"Exercise: {lead['exercise']}\n"
+        f"Rating: {rating_label}\n"
         f"Time: {lead['timestamp']}\n\n"
-        f"--- REPORT ---\n\n"
-        f"{lead['report']}"
+        f"--- REPORT ---\n\n{lead['report']}"
     )
-    msg = MIMEMultipart()
+
+    # HTML email
+    report_html = lead['report'].replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+    # Basic markdown → HTML for report body
+    import re
+    report_html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', report_html, flags=re.MULTILINE)
+    report_html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', report_html, flags=re.MULTILINE)
+    report_html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', report_html, flags=re.MULTILINE)
+    report_html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', report_html)
+    report_html = re.sub(r'\[([^\]]+)\]\((https?://[^)]+)\)', r'<a href="\2">\1</a>', report_html)
+    report_html = re.sub(r'^- (.+)$', r'<li>\1</li>', report_html, flags=re.MULTILINE)
+    report_html = re.sub(r'(<li>.*</li>\n?)+', lambda m: f'<ul>{m.group(0)}</ul>', report_html)
+    report_html = re.sub(r'\n\n', '</p><p>', report_html)
+    report_html = f'<p>{report_html}</p>'
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;padding:20px;color:#1a1a2e;">
+  <div style="background:#ef5a21;padding:20px 24px;border-radius:6px 6px 0 0;">
+    <h2 style="margin:0;color:#fff;font-size:18px;">New Wayde Session</h2>
+    <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Wade Institute of Entrepreneurship</p>
+  </div>
+  <div style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;padding:24px;">
+    <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:14px;">
+      <tr style="background:#f8f8f8;">
+        <td style="padding:8px 12px;font-weight:bold;width:120px;border-bottom:1px solid #eee;">Name</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;">{lead['name']}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 12px;font-weight:bold;border-bottom:1px solid #eee;">Email</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;"><a href="mailto:{lead['email']}" style="color:#ef5a21;">{lead['email']}</a></td>
+      </tr>
+      <tr style="background:#f8f8f8;">
+        <td style="padding:8px 12px;font-weight:bold;border-bottom:1px solid #eee;">Company</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;">{lead['company']}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 12px;font-weight:bold;border-bottom:1px solid #eee;">Role</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;">{lead['role']}</td>
+      </tr>
+      <tr style="background:#f8f8f8;">
+        <td style="padding:8px 12px;font-weight:bold;border-bottom:1px solid #eee;">Stage</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;">{lead['mode']}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 12px;font-weight:bold;border-bottom:1px solid #eee;">Exercise</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;">{lead['exercise']}</td>
+      </tr>
+      <tr style="background:#f8f8f8;">
+        <td style="padding:8px 12px;font-weight:bold;">Rating</td>
+        <td style="padding:8px 12px;">{rating_label}</td>
+      </tr>
+    </table>
+    <h3 style="font-size:15px;border-bottom:2px solid #ef5a21;padding-bottom:6px;margin-top:0;">Session Report</h3>
+    <div style="font-family:Georgia,serif;font-size:14px;line-height:1.7;color:#222;">
+      {report_html}
+    </div>
+  </div>
+  <p style="text-align:center;font-size:11px;color:#999;margin-top:16px;">
+    Wayde AI Coaching Tool &middot; <a href="https://wadeinstitute.org.au" style="color:#ef5a21;">wadeinstitute.org.au</a>
+  </p>
+</body>
+</html>"""
+
+    msg = MIMEMultipart('alternative')
     msg['From'] = smtp_user
     msg['To'] = notify_email
     msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
+    msg.attach(MIMEText(plain, 'plain'))
+    msg.attach(MIMEText(html, 'html'))
 
     with smtplib.SMTP(smtp_host, smtp_port) as server:
         server.starttls()
