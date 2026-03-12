@@ -499,9 +499,6 @@ Available programs:
 ### About This Session
 One sentence: exercise used, why it's effective, and how it fits this stage of the journey.
 
----
-*A copy of this report has been shared with the Wade Institute team.*
-
 Keep the report warm but rigorous. No filler. Every sentence should earn its place."""
 
 EXERCISE_NAMES = {
