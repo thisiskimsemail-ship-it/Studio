@@ -484,7 +484,7 @@ function scrollToBottom() {
 function maybeShowReportCta() {
     if (state.exchangeCount >= 1 && !state.reportGenerated) {
         reportCtaBtn.disabled = false;
-        reportCtaBtn.textContent = 'See your session report →';
+        reportCtaBtn.textContent = 'Access your Innovation Coaching Session report →';
         // Enable within-stage tool picker after first real exchange
         toolPickerBtn.disabled = false;
     }
@@ -566,7 +566,7 @@ function renderWrapPrompt() {
         const nextExName = EXERCISE_LABELS[next.exercise] || next.exercise;
         actionsHtml += `<button class="wrap-btn wrap-btn-continue">Continue to ${nextModeName} — ${nextExName} →</button>`;
     }
-    actionsHtml += '<button class="wrap-btn wrap-btn-report">Get your session report →</button>';
+    actionsHtml += '<button class="wrap-btn wrap-btn-report">Access your Innovation Coaching Session report →</button>';
 
     wrapDiv.innerHTML = `
         <p class="wrap-prompt-text">This exercise is complete.</p>
