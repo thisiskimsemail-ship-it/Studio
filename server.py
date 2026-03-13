@@ -659,7 +659,7 @@ Recommend 1-2 of the most contextually relevant Wade programs or upcoming events
 {WADE_PROGRAMS_PLACEHOLDER}
 
 ### About This Session
-One sentence: exercise used, why it's effective, and how it fits this stage of the journey.
+One sentence naming the exact exercise used ({EXERCISE_PLACEHOLDER}) — why it's effective and how it fits this stage of the journey.
 
 Keep the report warm but rigorous. No filler. Every sentence should earn its place."""
 
@@ -782,8 +782,8 @@ def generate_report():
     )
     programs_block = live_programs or fallback
 
-    system = REPORT_PROMPT.replace('{WADE_PROGRAMS_PLACEHOLDER}', programs_block)
-    system += f"\n\nThis session used the **{exercise_name}** exercise from the **{mode_name}** module."
+    exercise_context = f"IMPORTANT: This session used the **{exercise_name}** exercise from the **{mode_name}** stage. Always refer to this exercise by its correct name ({exercise_name}) — do not use any other exercise name even if it appears in the conversation history.\n\n"
+    system = exercise_context + REPORT_PROMPT.replace('{WADE_PROGRAMS_PLACEHOLDER}', programs_block).replace('{EXERCISE_PLACEHOLDER}', exercise_name)
 
     # Ensure last message is from user (API requirement)
     report_messages = list(messages)
