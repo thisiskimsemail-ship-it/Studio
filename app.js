@@ -145,6 +145,7 @@ const routingBackBtn = $('#routingBackBtn');
 
 function updateStageProgress(mode) {
     stageProgress.dataset.mode = mode;
+    document.body.dataset.mode = mode;
     const idx = STAGE_ORDER.indexOf(mode);
     $$('.stage-step').forEach((step, i) => {
         step.classList.toggle('active', i === idx);
@@ -433,7 +434,7 @@ sessionClose.addEventListener('click', () => {
     clearSession();
 });
 
-// === SWAP TOOLS ===
+// === SWAPTOOLS ===
 
 function swapToTool(mode, exercise, swapEl) {
     // Preserve conversation history
@@ -508,7 +509,7 @@ function startRouting(text) {
     state.reportGenerated = false;
     state.reportText = '';
 
-    welcome.classList.add('hidden');
+     welcome.classList.add('hidden');
     routingBack.classList.remove('hidden'); // show subtle back link immediately
     modeLabel.textContent = 'Finding your tool · ';
 
@@ -693,6 +694,7 @@ function restoreSession(session) {
 
     if (state.reportGenerated && state.reportText) {
         reportContent.innerHTML = renderMarkdown(state.reportText);
+        populateReportMeta();
         reportCard.classList.remove('hidden');
         revealFullReport();
     } else {
@@ -937,6 +939,7 @@ reportCtaBtn.addEventListener('click', async () => {
 
         // Show partial preview + inline unlock form (no modal gate)
         reportContent.innerHTML = renderMarkdown(state.reportText);
+        populateReportMeta();
         reportCard.classList.remove('hidden');
         reportCard.classList.add('report-preview');
         reportUnlock.classList.remove('hidden');
@@ -1060,6 +1063,21 @@ async function shareReport() {
 }
 
 $('#reportShareBtn').addEventListener('click', shareReport);
+
+// === REPORT META + NEW SESSION ===
+
+function populateReportMeta() {
+    const reportMetaEl = $('#reportMeta');
+    if (!reportMetaEl) return;
+    const exName = EXERCISE_LABELS[state.exercise] || state.exercise;
+    const mName = MODE_LABELS[state.mode] || state.mode;
+    const date = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+    reportMetaEl.textContent = `${mName} · ${exName} · ${date}`;
+}
+
+$('#reportNewSessionBtn')?.addEventListener('click', () => {
+    forceCloseSession();
+});
 
 // === RESUME SAVED SESSION ===
 
