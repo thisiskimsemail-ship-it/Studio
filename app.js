@@ -365,6 +365,38 @@ function startExercise(mode, exercise, startMsg = null) {
 
 // === BACK TO MENU ===
 
+function forceCloseSession() {
+    state.mode = null;
+    state.exercise = null;
+    state.messages = [];
+    state.exchangeCount = 0;
+    state.reportGenerated = false;
+    state.reportText = '';
+    welcome.classList.remove('hidden');
+    sessionBar.classList.add('hidden');
+    messagesEl.innerHTML = '';
+    inputField.value = '';
+    inputField.disabled = false;
+    inputField.placeholder = 'Describe your challenge or idea...';
+    sendBtn.disabled = true;
+    modeLabel.textContent = '';
+    state.rating = null;
+    setPickerEnabled(false);
+    toolPickerMenu.classList.add('hidden');
+    reportCta.classList.add('hidden');
+    reportCard.classList.add('hidden');
+    reportCard.classList.remove('report-preview');
+    reportUnlock.classList.add('hidden');
+    leadModal.classList.add('hidden');
+    wadeCta.classList.add('hidden');
+    $('#reportDownloadBtn').classList.add('hidden');
+    $('#reportShareBtn').classList.add('hidden');
+    routingBack.classList.add('hidden');
+    state.projectContext = [];
+    state.routing = false;
+    clearSession();
+}
+
 sessionClose.addEventListener('click', () => {
     if (!window.confirm("End this session? Your conversation won't be saved.")) return;
 
@@ -825,6 +857,19 @@ async function streamResponse() {
                 wrapSignaled = true;
                 fullText = fullText.replace(/\n?\[WRAP\]/, '').trim();
                 if (agentDiv) agentDiv.innerHTML = renderMarkdown(fullText);
+            }
+            // Check for [END_SESSION] signal — community values crossed twice
+            if (fullText.includes('[END_SESSION]')) {
+                fullText = fullText.replace(/\n?\[END_SESSION\]/, '').trim();
+                if (agentDiv) agentDiv.innerHTML = renderMarkdown(fullText);
+                state.messages.push({ role: 'assistant', content: fullText });
+                state.streaming = false;
+                sendBtn.disabled = true;
+                inputField.disabled = true;
+                inputField.placeholder = 'This session has ended.';
+                saveSession();
+                setTimeout(() => forceCloseSession(), 4000);
+                return;
             }
         }
 
