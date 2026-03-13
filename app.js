@@ -149,29 +149,26 @@ function updateStageProgress(mode) {
     $$('.stage-step').forEach((step, i) => {
         step.classList.toggle('active', i === idx);
         step.classList.toggle('done', i < idx);
-        step.classList.toggle('clickable', i !== idx);
-        step.onclick = (i !== idx) ? () => navigateToStage(STAGE_ORDER[i]) : null;
-        step.title = (i !== idx) ? `Go to ${MODE_LABELS[STAGE_ORDER[i]]}` : '';
+        step.classList.add('clickable'); // all stages open a picker
+        step.onclick = null;
+        step.title = '';
         // Remove any previous tool label
         step.querySelector('.stage-tool')?.remove();
         if (i === idx) {
-            // Show current tool name under the active stage dot
+            // Show current tool name under the active stage
             const toolEl = document.createElement('span');
             toolEl.className = 'stage-tool';
             toolEl.textContent = EXERCISE_LABELS[state.exercise] || state.exercise;
             step.appendChild(toolEl);
-            // Anchor the dropdown to the active step
-            step.appendChild(toolPickerMenu);
         }
     });
 }
 
-// Navigate to a stage via progress dots — carries report context if available
-function navigateToStage(targetMode) {
+// Navigate to a stage — carries report context if available, picks a specific exercise if provided
+function navigateToStage(targetMode, specificExercise = null) {
     if (state.streaming) return;
-    const targetExercise = STAGE_DEFAULT[targetMode];
+    const targetExercise = specificExercise || STAGE_DEFAULT[targetMode];
     if (state.reportText) {
-        // Save current stage report into project context before moving on
         state.projectContext.push({
             stage: MODE_LABELS[state.mode] || state.mode,
             exercise: EXERCISE_LABELS[state.exercise] || state.exercise,
@@ -191,23 +188,84 @@ function setPickerEnabled(enabled) {
     stageProgress.classList.toggle('tool-enabled', enabled);
 }
 
-// Clicking the active stage step opens the tool picker
-stageProgress.addEventListener('click', (e) => {
-    const activeStep = stageProgress.querySelector('.stage-step.active');
-    if (!activeStep || !activeStep.contains(e.target)) return;
-    e.stopPropagation();
-    if (toolPickerBtn.disabled) return;
-    const tools = (TOOLS_BY_MODE[state.mode] || []).filter(t => t !== state.exercise);
-    toolPickerMenu.innerHTML = tools
-        .map(t => `<button class="tool-picker-item" data-exercise="${t}">${EXERCISE_LABELS[t]}</button>`)
-        .join('');
+let pickerCloseTimer = null;
+
+// Build and show the tool picker anchored to a stage step
+function openStagePickerForStep(stepEl) {
+    if (state.streaming) return;
+    clearTimeout(pickerCloseTimer);
+
+    const targetMode = stepEl.dataset.stage;
+    const tools = TOOLS_BY_MODE[targetMode] || [];
+
+    toolPickerMenu.innerHTML =
+        tools.map(t => {
+            const isCurrent = t === state.exercise && targetMode === state.mode;
+            return `<button class="tool-picker-item${isCurrent ? ' tool-picker-current' : ''}" data-exercise="${t}" data-mode="${targetMode}">${EXERCISE_LABELS[t] || t}</button>`;
+        }).join('') +
+        `<div class="picker-divider"></div>
+         <button class="tool-picker-item tool-picker-help" data-mode="${targetMode}">Help me choose →</button>`;
+
     toolPickerMenu.querySelectorAll('.tool-picker-item').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
             toolPickerMenu.classList.add('hidden');
-            swapToTool(state.mode, btn.dataset.exercise, null);
+            if (btn.classList.contains('tool-picker-help')) {
+                helpMeChooseForStage(btn.dataset.mode);
+                return;
+            }
+            const exercise = btn.dataset.exercise;
+            const mode = btn.dataset.mode;
+            if (mode === state.mode && exercise === state.exercise) return; // already here
+            if (mode === state.mode) {
+                swapToTool(mode, exercise, null);
+            } else {
+                navigateToStage(mode, exercise);
+            }
         });
     });
-    toolPickerMenu.classList.toggle('hidden');
+
+    // Anchor menu to this step and show
+    stepEl.appendChild(toolPickerMenu);
+    toolPickerMenu.classList.remove('hidden');
+}
+
+// Ask Wayde to recommend a tool for the given stage
+function helpMeChooseForStage(mode) {
+    const stageName = MODE_LABELS[mode] || mode;
+    const toolNames = (TOOLS_BY_MODE[mode] || []).map(t => EXERCISE_LABELS[t] || t).join(', ');
+    const msg = `I'm at the ${stageName} stage but not sure which tool to use. The options are ${toolNames}. Based on what we've been working on, which would you recommend and why?`;
+    toolPickerMenu.classList.add('hidden');
+    appendMessage('user', msg);
+    state.messages.push({ role: 'user', content: msg });
+    streamResponse();
+}
+
+// Hover: show picker when entering a stage step
+$$('.stage-step').forEach(step => {
+    step.addEventListener('mouseenter', () => {
+        if (sessionBar.classList.contains('hidden')) return;
+        openStagePickerForStep(step);
+    });
+    step.addEventListener('mouseleave', (e) => {
+        if (!toolPickerMenu.contains(e.relatedTarget)) {
+            pickerCloseTimer = setTimeout(() => toolPickerMenu.classList.add('hidden'), 120);
+        }
+    });
+});
+
+// Keep picker open when hovering over the menu itself
+toolPickerMenu.addEventListener('mouseenter', () => clearTimeout(pickerCloseTimer));
+toolPickerMenu.addEventListener('mouseleave', () => {
+    pickerCloseTimer = setTimeout(() => toolPickerMenu.classList.add('hidden'), 120);
+});
+
+// Click: also works for touch devices
+stageProgress.addEventListener('click', (e) => {
+    const clickedStep = e.target.closest('.stage-step');
+    if (!clickedStep || toolPickerMenu.contains(e.target)) return;
+    e.stopPropagation();
+    openStagePickerForStep(clickedStep);
 });
 
 // Close picker when clicking anywhere outside it

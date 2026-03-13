@@ -170,15 +170,18 @@ body {
 .stage-step.active[data-stage="framework"] { background: rgba(236,54,147,0.1);  border-color: rgba(236,54,147,0.2);  }
 
 .stage-step.active .stage-name { opacity: 1; }
-.stage-step.active { cursor: default; }
 
-/* Clickable (non-active) hover: tint in stage color */
-.stage-step.clickable { cursor: pointer; }
-.stage-step.clickable[data-stage="reframe"]:hover   { background: rgba(239,90,33,0.06);   }
-.stage-step.clickable[data-stage="ideate"]:hover    { background: rgba(155,109,255,0.06); }
-.stage-step.clickable[data-stage="debate"]:hover    { background: rgba(38,189,190,0.06);  }
-.stage-step.clickable[data-stage="framework"]:hover { background: rgba(236,54,147,0.06);  }
-.stage-step.clickable:hover .stage-name { opacity: 0.7; }
+/* All steps open a picker — always pointer, hover tint in stage color */
+.stage-step { cursor: pointer; }
+.stage-step[data-stage="reframe"]:hover   { background: rgba(239,90,33,0.06);   }
+.stage-step[data-stage="ideate"]:hover    { background: rgba(155,109,255,0.06); }
+.stage-step[data-stage="debate"]:hover    { background: rgba(38,189,190,0.06);  }
+.stage-step[data-stage="framework"]:hover { background: rgba(236,54,147,0.06);  }
+.stage-step:hover .stage-name { opacity: 0.8; }
+.stage-step.active[data-stage="reframe"]:hover   { background: rgba(239,90,33,0.14);   }
+.stage-step.active[data-stage="ideate"]:hover    { background: rgba(155,109,255,0.14); }
+.stage-step.active[data-stage="debate"]:hover    { background: rgba(38,189,190,0.14);  }
+.stage-step.active[data-stage="framework"]:hover { background: rgba(236,54,147,0.14);  }
 
 /* Tool label: matches active stage color */
 .stage-tool {
@@ -265,6 +268,34 @@ body {
 .tool-picker-item:hover {
     background: rgba(255,255,255,0.07);
     color: var(--text);
+}
+
+/* Current tool shown with a subtle indicator */
+.tool-picker-current {
+    color: var(--text);
+    font-weight: 600;
+}
+.tool-picker-current::after {
+    content: ' ·';
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Divider between tools and "Help me choose" */
+.picker-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 0.25rem 0.3rem;
+}
+
+/* Help me choose button */
+.tool-picker-help {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+.tool-picker-help:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.05);
 }
 
 /* === CHAT AREA === */
