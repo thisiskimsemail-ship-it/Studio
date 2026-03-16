@@ -479,10 +479,22 @@ body {
     font-size: 0.9rem;
     color: var(--text-dim);
     line-height: 1.5;
-    margin: 0 0 0.2rem;
+    margin: 0 0 1rem;
 }
-.cards-sub:last-of-type {
-    margin-bottom: 1rem;
+.cards-sub-link {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-muted);
+    opacity: 0.6;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+}
+.cards-sub-link:hover {
+    opacity: 1;
+    color: var(--text);
 }
 
 /* === WELCOME CARDS === */
