@@ -2064,6 +2064,17 @@ html[data-theme="light"] .resume-banner { background: rgba(246,245,245,0.95); bo
     text-underline-offset: 2px;
 }
 
+/* Intro card exercise name link */
+.intro-label-link {
+    color: inherit;
+    text-decoration: none;
+}
+.intro-label-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    opacity: 0.85;
+}
+
 /* "Learn more →" link at bottom of each stage card */
 .card-learn-more {
     display: block;

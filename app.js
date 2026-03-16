@@ -501,7 +501,7 @@ function startExercise(mode, exercise, startMsg = null) {
             const introDiv = document.createElement('div');
             introDiv.className = 'msg-intro';
             introDiv.dataset.mode = mode;
-            introDiv.innerHTML = `<div class="msg-intro-label">${EXERCISE_LABELS[exercise] || exercise}</div>${desc}`;
+            introDiv.innerHTML = `<div class="msg-intro-label"><a class="intro-label-link" href="toolbox.html#${exercise}" target="_blank" rel="noopener">${EXERCISE_LABELS[exercise] || exercise}</a></div>${desc}`;
             messagesEl.appendChild(introDiv);
         }
         // Set a tool-specific placeholder hint
@@ -629,7 +629,7 @@ function swapToTool(mode, exercise, swapEl) {
 
     // Update the sticky exercise intro card at the top
     const exerciseDesc = EXERCISE_DESCS[exercise] || '';
-    const introHTML = `<div class="msg-intro-label">${exerciseName}</div>${exerciseDesc}`;
+    const introHTML = `<div class="msg-intro-label"><a class="intro-label-link" href="toolbox.html#${exercise}" target="_blank" rel="noopener">${exerciseName}</a></div>${exerciseDesc}`;
     const stickyIntro = messagesEl.querySelector('.msg-intro');
     if (stickyIntro) {
         stickyIntro.dataset.mode = mode;
@@ -827,7 +827,7 @@ function restoreSession(session) {
     const restoreIntro = document.createElement('div');
     restoreIntro.className = 'msg-intro';
     restoreIntro.dataset.mode = state.mode;
-    restoreIntro.innerHTML = `<div class="msg-intro-label">${EXERCISE_LABELS[state.exercise] || state.exercise}</div>${restoreDesc}`;
+    restoreIntro.innerHTML = `<div class="msg-intro-label"><a class="intro-label-link" href="toolbox.html#${state.exercise}" target="_blank" rel="noopener">${EXERCISE_LABELS[state.exercise] || state.exercise}</a></div>${restoreDesc}`;
     messagesEl.appendChild(restoreIntro);
 
     const SWAP_PREFIX = "Let's switch to ";
@@ -841,7 +841,7 @@ function restoreSession(session) {
             const breakEl = document.createElement('div');
             breakEl.className = 'msg-intro-break';
             if (swapMode) breakEl.dataset.mode = swapMode;
-            breakEl.innerHTML = `<div class="msg-intro-label">${swappedName}</div>${desc}`;
+            breakEl.innerHTML = `<div class="msg-intro-label"><a class="intro-label-link" href="toolbox.html#${exerciseKey}" target="_blank" rel="noopener">${swappedName}</a></div>${desc}`;
             messagesEl.appendChild(breakEl);
         } else if (m.role === 'user' && m.content === 'Please start the session.') {
             // Skip synthetic kickoff — WAiDE's opening response is enough
