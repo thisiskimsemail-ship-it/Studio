@@ -473,6 +473,18 @@ body {
 }
 .cards-chevron { display: none; }
 
+.cards-sub {
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin: 0 0 0.4rem;
+}
+.cards-sub:last-of-type {
+    margin-bottom: 1.5rem;
+}
+
 /* === WELCOME CARDS === */
 .welcome-cards {
     display: flex;
