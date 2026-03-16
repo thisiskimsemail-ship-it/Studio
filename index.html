@@ -10,6 +10,8 @@
 </head>
 <body>
 
+<div class="app-shell">
+
     <header class="header">
         <img class="logo" src="logo.png" alt="Wade Institute">
         <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle light/dark mode">
@@ -204,17 +206,6 @@
             <button class="routing-back-btn" id="routingBackBtn">← Back to tools</button>
         </div>
 
-        <!-- Wade team conversation CTA — always last -->
-        <div class="wade-cta" id="wadeCta">
-            <img class="wade-cta-icon" src="wade-icon.png" alt="Wade Institute">
-            <p class="wade-cta-heading">Talk to the Wade team</p>
-            <p class="wade-cta-text">Interested in talking to a member of the Wade team about your innovation challenge?</p>
-            <div class="wade-cta-contacts">
-                <a class="wade-cta-btn" href="mailto:enquiries@wadeinstitute.org.au">enquiries@wadeinstitute.org.au</a>
-                <a class="wade-cta-btn" href="tel:+61393441100">+61 3 9344 1100</a>
-            </div>
-            <p class="wade-cta-org">Wade Institute of Entrepreneurship</p>
-        </div>
     </main>
 
     <!-- Lead capture modal overlay -->
@@ -239,28 +230,53 @@
         <button class="resume-dismiss" id="resumeDismiss">✕</button>
     </div>
 
+</div><!-- /app-shell -->
+
+    <!-- Universal site footer — below prompt bar, scroll to reach -->
+    <div class="site-footer" id="wadeCta">
+        <div class="site-footer-inner">
+            <div class="site-footer-brand">
+                <img class="site-footer-icon" src="wade-icon.png" alt="Wade Institute">
+                <span class="site-footer-orgname">Wade Institute of Entrepreneurship</span>
+            </div>
+            <div class="site-footer-body">
+                <p class="site-footer-heading">Talk to the Wade team</p>
+                <p class="site-footer-text">Interested in talking to a member of the Wade team about your innovation challenge?</p>
+                <div class="site-footer-contacts">
+                    <a class="site-footer-link" href="mailto:enquiries@wadeinstitute.org.au">enquiries@wadeinstitute.org.au</a>
+                    <a class="site-footer-link" href="tel:+61393441100">+61 3 9344 1100</a>
+                </div>
+            </div>
+            <div class="site-footer-cta-wrap">
+                <a class="site-footer-cta" href="https://wadeinstitute.org.au/start/" target="_blank" rel="noopener noreferrer">Explore Wade Programs →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prompt bar — fixed at viewport bottom, always accessible -->
     <footer class="input-area">
         <form class="input-form" id="inputForm">
-            <textarea class="input-field" id="inputField" placeholder="Describe your challenge or idea..." rows="1"></textarea>
-            <button class="mic-btn" type="button" id="micBtn" title="Voice input" aria-label="Voice input">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                    <line x1="12" y1="19" x2="12" y2="23"></line>
-                    <line x1="8" y1="23" x2="16" y2="23"></line>
-                </svg>
-            </button>
-            <button class="send-btn" type="submit" id="sendBtn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-            </button>
+            <textarea class="input-field" id="inputField" placeholder="Your challenge or idea..." rows="1"></textarea>
+            <div class="input-btns">
+                <button class="mic-btn" type="button" id="micBtn" title="Voice input" aria-label="Voice input">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
+                <button class="send-btn" type="submit" id="sendBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
         </form>
         <div class="input-hint">
             <span>
                 <span class="mode-label" id="modeLabel"></span>
-                <span class="input-hint-copy">© 2026 Wade Institute of Entrepreneurship · WAiDE is in Beta and for educational use only. Decisions remain yours.</span>
             </span>
             <div class="input-hint-actions">
                 <div class="report-cta hidden" id="reportCta">
