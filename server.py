@@ -647,6 +647,145 @@ def fetch_wade_programs():
     return _wade_cache['data']
 
 
+# === WADE KNOWLEDGE BASE ===
+
+WADE_COMMUNITY_ARTICLES = [
+    {
+        "title": "From confusion to clarity: How the Master of Entrepreneurship program helped one graduate design his dream career",
+        "url": "https://wadeinstitute.org.au/from-confusion-to-clarity-how-the-master-of-entrepreneurship-program-helped-one-graduate-design-his-dream-career/",
+        "categories": ["Alumni", "Career design", "Master of Entrepreneurship"],
+        "audiences": ["Entrepreneur"],
+    },
+    {
+        "title": "Embracing your inner cockroach and finding your ikigai",
+        "url": "https://wadeinstitute.org.au/embracing-your-inner-cockroach-and-finding-your-ikigai/",
+        "categories": ["Alumni", "Resilience", "Purpose"],
+        "audiences": ["Entrepreneur"],
+    },
+    {
+        "title": "Plying our own path: How Australia is rewriting the venture capital playbook",
+        "url": "https://wadeinstitute.org.au/plying-our-own-path-how-australia-is-rewriting-the-venture-capital-playbook/",
+        "categories": ["Venture Capital", "Australian ecosystem"],
+        "audiences": ["Investor"],
+    },
+    {
+        "title": "The muscle we've built: lessons from a decade of belief in Australian venture",
+        "url": "https://wadeinstitute.org.au/the-muscle-weve-built-lessons-from-a-decade-of-belief-in-australian-venture/",
+        "categories": ["Venture Capital", "Ecosystem building"],
+        "audiences": ["Investor"],
+    },
+    {
+        "title": "The argument for reinvention",
+        "url": "https://wadeinstitute.org.au/the-argument-for-reinvention/",
+        "categories": ["Career change", "Reinvention", "Entrepreneurship"],
+        "audiences": ["Entrepreneur", "Investor"],
+    },
+    {
+        "title": "Exit pathways in focus: what Australia's startup ecosystem needs next",
+        "url": "https://wadeinstitute.org.au/exit-pathways-in-focus-what-australias-startup-ecosystem-needs-next/",
+        "categories": ["Venture Capital", "Exits", "Ecosystem"],
+        "audiences": ["Investor"],
+    },
+    {
+        "title": "Breaking into Venture: Lessons from the VC Catalyst AMA",
+        "url": "https://wadeinstitute.org.au/breaking-into-venture-lessons-from-the-vc-catalyst-ama/",
+        "categories": ["Venture Capital", "VC Catalyst", "Career"],
+        "audiences": ["Investor"],
+    },
+    {
+        "title": "Meet Jessica Christiansen-Franks — Wade Institute's New Director",
+        "url": "https://wadeinstitute.org.au/meet-jessica-christiansen-franks-wades-new-director/",
+        "categories": ["News", "Wade leadership"],
+        "audiences": ["Entrepreneur", "Investor", "Schools"],
+    },
+]
+
+WADE_PROGRAMS = [
+    {
+        "name": "Think Like an Entrepreneur",
+        "format": "3-Day Immersive",
+        "description": "Build entrepreneurial skills you can use to lead change inside an organisation.",
+        "url": "https://wadeinstitute.org.au/programs/entrepreneurs/think-like-an-entrepreneur/",
+        "for": ["corporate innovator", "intrapreneur", "leader", "new venture", "problem solving", "clarify", "ideate"],
+    },
+    {
+        "name": "The AI Conundrum",
+        "format": "3-Day Immersive",
+        "description": "Understand where AI can create real value and how to act on it for your organisation.",
+        "url": "https://wadeinstitute.org.au/programs/entrepreneurs/the-ai-conundrum/",
+        "for": ["AI", "technology", "digital", "strategy", "innovation"],
+    },
+    {
+        "name": "Growth Engine",
+        "format": "3-Day Immersive",
+        "description": "Build a clear growth strategy for the next stage of your scale-up or business.",
+        "url": "https://wadeinstitute.org.au/programs/entrepreneurs/growth-engine/",
+        "for": ["growth", "scale", "strategy", "develop", "lean canvas", "business model"],
+    },
+    {
+        "name": "Master of Entrepreneurship",
+        "format": "Full-Year University Program (University of Melbourne)",
+        "description": "Build the skills and mindset to start ventures or lead innovation.",
+        "url": "https://wadeinstitute.org.au/programs/entrepreneurs/master-of-entrepreneurship/",
+        "for": ["career change", "deep learning", "founder", "entrepreneurship", "reinvention"],
+    },
+    {
+        "name": "VC Catalyst",
+        "format": "10-Day Deep Learning",
+        "description": "Build deep skills, judgement and networks to invest in early-stage ventures.",
+        "url": "https://wadeinstitute.org.au/programs/investors/vc-catalyst/",
+        "for": ["investor", "venture capital", "startup investment", "funding"],
+    },
+    {
+        "name": "Impact Catalyst",
+        "format": "10-Day Deep Learning",
+        "description": "Learn how to invest for social and sustainable impact as well as financial return.",
+        "url": "https://wadeinstitute.org.au/programs/investors/impact-catalyst/",
+        "for": ["impact", "social enterprise", "sustainability", "ESG", "investor"],
+    },
+    {
+        "name": "VC Fundamentals",
+        "format": "Online Self-paced",
+        "description": "Learn the foundations of venture capital and whether it's right for you.",
+        "url": "https://wadeinstitute.org.au/programs/investors/vc-fundamentals",
+        "for": ["investor", "venture capital", "beginner investor", "funding basics"],
+    },
+    {
+        "name": "UpSchool Complete",
+        "format": "3-Day Immersive",
+        "description": "The tools and confidence to teach entrepreneurship in any classroom or school.",
+        "url": "https://wadeinstitute.org.au/programs/schools/upschool-complete/",
+        "for": ["educator", "teacher", "schools", "education"],
+    },
+    {
+        "name": "Bespoke Programs",
+        "format": "Tailored",
+        "description": "Custom programs designed around your people, context and goals.",
+        "url": "https://wadeinstitute.org.au/programs/bespoke/",
+        "for": ["corporate", "organisation", "team", "custom", "bespoke"],
+    },
+]
+
+def build_wade_knowledge_block():
+    articles_text = "\n".join(
+        f'- [{a["title"]}]({a["url"]}) — {", ".join(a["categories"])}'
+        for a in WADE_COMMUNITY_ARTICLES
+    )
+    programs_text = "\n".join(
+        f'- [{p["name"]}]({p["url"]}) ({p["format"]}): {p["description"]}'
+        for p in WADE_PROGRAMS
+    )
+    return f"""
+WADE COMMUNITY ARTICLES (use these for Suggested Reading):
+{articles_text}
+
+WADE PROGRAMS (use these for Recommended Courses):
+{programs_text}
+"""
+
+WADE_KNOWLEDGE_BLOCK = build_wade_knowledge_block()
+
+
 # === REPORT GENERATION ===
 
 REPORT_PROMPT = """You are producing an innovation coaching summary for a session at the Wade Institute of Entrepreneurship.
@@ -675,15 +814,18 @@ Begin the report with the title: # Innovation Coaching Session Summary
 - At least one network-building action (a specific type of person to find, a community to join, an event to attend, a mentor to seek out)
 - The remaining steps should be equally concrete and time-bound
 
-### Wade Institute — Programs Worth Exploring
-Recommend 1-2 of the most contextually relevant Wade programs or upcoming events. Write one sentence explaining why it fits this person's specific challenge and situation. Only recommend things that are genuinely relevant — if none fit well, say so briefly. Always render each recommendation as a markdown link so the reader can go directly to the page.
+### Suggested Reading
+Recommend 1-2 of the most relevant Wade community articles from the list provided. One sentence explaining why each fits this session. Always render as markdown links. Only recommend articles that are genuinely relevant to what this person is working on.
 
-{WADE_PROGRAMS_PLACEHOLDER}
+### Recommended Courses
+Recommend 1-2 Wade programs from the list provided that would most benefit this person based on their challenge, stage, and what emerged in the session. One sentence per program explaining why it fits. Always render as markdown links.
 
 ### About This Session
 One sentence naming the exact exercise used ({EXERCISE_PLACEHOLDER}) — why it's effective and how it fits this stage of the journey.
 
-Keep the report warm but rigorous. No filler. Every sentence should earn its place."""
+Keep the report warm but rigorous. No filler. Every sentence should earn its place.
+
+{WADE_PROGRAMS_PLACEHOLDER}"""
 
 EXERCISE_NAMES = {
     'five-whys': 'Five Whys',
@@ -805,7 +947,7 @@ def generate_report():
     programs_block = live_programs or fallback
 
     exercise_context = f"IMPORTANT: This session used the **{exercise_name}** exercise from the **{mode_name}** stage. Always refer to this exercise by its correct name ({exercise_name}) — do not use any other exercise name even if it appears in the conversation history.\n\n"
-    system = exercise_context + REPORT_PROMPT.replace('{WADE_PROGRAMS_PLACEHOLDER}', programs_block).replace('{EXERCISE_PLACEHOLDER}', exercise_name)
+    system = exercise_context + REPORT_PROMPT.replace('{WADE_PROGRAMS_PLACEHOLDER}', programs_block).replace('{EXERCISE_PLACEHOLDER}', exercise_name) + WADE_KNOWLEDGE_BLOCK
 
     # Ensure last message is from user (API requirement)
     report_messages = list(messages)
