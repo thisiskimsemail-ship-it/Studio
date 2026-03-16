@@ -137,18 +137,18 @@ const EXERCISE_MODE = {
 
 // Exercise descriptions (mirror of HTML card text)
 const EXERCISE_DESCS = {
-    'five-whys':        'Ask "why?" five times to move past symptoms and find what\'s really causing the problem. From Toyota\'s production system, taught at Harvard Business School.',
-    'jtbd':             'Understand what your customer or user is actually trying to accomplish. People don\'t adopt solutions — they hire them to make progress. Clayton Christensen\'s framework, used across industries from healthcare to education.',
-    'empathy-map':      'Deeply understand your user before defining the problem — what they say, think, do, and feel. The gap between those is where the real opportunity lives. Stanford d.school\'s Empathise stage.',
-    'hmw':              'Reframe your problem as an opportunity and open up new directions before committing to one. Stanford d.school\'s bridge between defining a problem and generating solutions.',
-    'scamper':          'A structured checklist for generating ideas: Substitute, Combine, Adapt, Modify, Put to other uses, Eliminate, Reverse. Alex Osborn\'s creativity method, widely used in product design.',
-    'crazy-8s':         'Generate 8 distinct ideas fast. Forces quantity over quality and breaks your fixation on the first "good" idea. The cornerstone of Google Ventures\' Design Sprint methodology.',
-    'pre-mortem':       'Imagine your initiative didn\'t land. Work backwards to surface the risks you\'d miss from an optimistic mindset. Research shows it increases risk identification by 30%.',
-    'devils-advocate':  'Stress-test your idea against its sharpest critic. Best used when your team is too aligned — or you need to find the holes before a major decision or investment of resources.',
-    'rapid-experiment': 'Design the cheapest, fastest test that would kill your riskiest assumption. Validate before you build — the core principle behind Lean Startup.',
-    'lean-canvas':      'Map the key elements of your initiative on one page. Start with the problem, not the solution — then surface the assumptions you\'re least certain about.',
-    'effectuation':     'Don\'t start with a goal — start with what you already have. Expert entrepreneurs build from their own skills, network, and resources. By Saras Sarasvathy.',
-    'analogical':       'Borrow solutions from other domains. How did nature solve this? How did another industry handle it? The technique behind many of history\'s most disruptive innovations — used by IDEO and DARPA.'
+    'five-whys':        'Uncover the root cause behind a problem.',
+    'jtbd':             'Understand what your customer is really trying to achieve.',
+    'empathy-map':      'Step into your user\'s world to reveal hidden insights.',
+    'hmw':              'Turn problems into opportunity-framing questions.',
+    'scamper':          'Stretch an idea by substituting, combining, adapting and more.',
+    'crazy-8s':         'Rapidly sketch eight ideas in eight minutes to unlock creativity.',
+    'pre-mortem':       'Imagine the project failed. What went wrong?',
+    'devils-advocate':  'Challenge your assumptions to strengthen your thinking.',
+    'rapid-experiment': 'Design a quick test to learn before you build.',
+    'lean-canvas':      'Outline your venture model on a single page.',
+    'effectuation':     'Build using the resources and relationships you already have.',
+    'analogical':       'Borrow solutions from unexpected places.'
 };
 
 // Suggested prompt framings shown as input placeholder
