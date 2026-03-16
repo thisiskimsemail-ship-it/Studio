@@ -1,3 +1,101 @@
+// === THEME TOGGLE ===
+(function() {
+    const saved = localStorage.getItem('waide_theme') || 'dark';
+    if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('themeToggle');
+        if (!btn) return;
+        const icon = btn.querySelector('.theme-icon');
+        icon.textContent = (localStorage.getItem('waide_theme') || 'dark') === 'light' ? '☾' : '☀';
+        btn.addEventListener('click', () => {
+            const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('waide_theme', next);
+            icon.textContent = next === 'light' ? '☾' : '☀';
+        });
+    });
+})();
+
+// === LOGO → HOME ===
+document.addEventListener('DOMContentLoaded', () => {
+    const logo = document.querySelector('.logo');
+    if (logo) {
+        logo.style.cursor = 'pointer';
+        logo.addEventListener('click', () => {
+            if (typeof forceCloseSession === 'function') forceCloseSession();
+        });
+    }
+});
+
+// === VOICE INPUT ===
+document.addEventListener('DOMContentLoaded', () => {
+    const micBtn = document.getElementById('micBtn');
+    const inputField = document.getElementById('inputField');
+    if (!micBtn || !inputField) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) { micBtn.classList.add('unsupported'); return; }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-AU';
+
+    let isRecording = false;
+    let baseText = '';
+
+    micBtn.addEventListener('click', () => {
+        if (isRecording) {
+            recognition.stop();
+        } else {
+            baseText = inputField.value;
+            recognition.start();
+        }
+    });
+
+    recognition.onstart = () => {
+        isRecording = true;
+        micBtn.classList.add('recording');
+        micBtn.setAttribute('aria-label', 'Stop recording');
+    };
+
+    recognition.onresult = (e) => {
+        const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+        inputField.value = baseText + (baseText && !baseText.endsWith(' ') ? ' ' : '') + transcript;
+        inputField.dispatchEvent(new Event('input'));
+    };
+
+    recognition.onend = () => {
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        micBtn.setAttribute('aria-label', 'Voice input');
+        inputField.focus();
+    };
+
+    recognition.onerror = (e) => {
+        if (e.error !== 'aborted') console.warn('Speech recognition error:', e.error);
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        micBtn.setAttribute('aria-label', 'Voice input');
+    };
+});
+
+// === TOOLBOX TOGGLE (mobile only) ===
+document.addEventListener('DOMContentLoaded', () => {
+    const heading = document.getElementById('cardsHeading');
+    const cards = document.querySelector('.welcome-cards');
+    if (!heading || !cards) return;
+    function isMobile() { return window.innerWidth <= 640; }
+    if (isMobile()) cards.classList.add('cards-collapsed');
+    heading.addEventListener('click', () => {
+        if (!isMobile()) return;
+        cards.classList.toggle('cards-collapsed');
+    });
+    window.addEventListener('resize', () => {
+        if (!isMobile()) cards.classList.remove('cards-collapsed');
+    });
+});
+
 // === EXERCISE LABELS ===
 const EXERCISE_LABELS = {
     'five-whys': 'Five Whys',
@@ -107,7 +205,8 @@ const state = {
     reportText: '',
     projectContext: [],  // accumulated context from previous stages
     routing: false,      // true when in tool-suggestion mode (no exercise selected)
-    rating: null         // thumbs up/down from wrap card
+    rating: null,        // thumbs up/down from wrap card
+    pushHarder: false    // more Socratic coaching mode
 };
 
 // === DOM ===
@@ -140,6 +239,56 @@ const reportUnlock = $('#reportUnlock');
 const unlockForm = $('#unlockForm');
 const routingBack = $('#routingBack');
 const routingBackBtn = $('#routingBackBtn');
+const inputArea = document.querySelector('.input-area');
+
+// Move input box into welcome (between tagline and cards) or back to body (session)
+function moveInputToWelcome() {
+    const cards = welcome.querySelector('.welcome-cards');
+    if (cards && inputArea && inputArea.parentElement !== welcome) {
+        welcome.insertBefore(inputArea, cards);
+    }
+}
+
+function moveInputToSession() {
+    if (inputArea && inputArea.parentElement !== document.body) {
+        document.body.appendChild(inputArea);
+    }
+}
+
+// Render "Challenge me" + "Help me" buttons after each AI response
+function renderSessionActions() {
+    if (!state.mode || state.routing || state.reportGenerated) return;
+    $('.session-actions')?.remove();
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'session-actions';
+
+    const challengeBtn = document.createElement('button');
+    challengeBtn.className = 'session-action-btn challenge-btn' + (state.pushHarder ? ' active' : '');
+    challengeBtn.textContent = state.pushHarder ? 'Challenge mode on' : 'Challenge me';
+    challengeBtn.addEventListener('click', () => {
+        state.pushHarder = !state.pushHarder;
+        challengeBtn.classList.toggle('active', state.pushHarder);
+        challengeBtn.textContent = state.pushHarder ? 'Challenge mode on' : 'Challenge me';
+    });
+
+    const helpBtn = document.createElement('button');
+    helpBtn.className = 'session-action-btn help-btn';
+    helpBtn.textContent = 'Help me';
+    helpBtn.addEventListener('click', () => {
+        if (state.streaming) return;
+        const helpMsg = "I'm feeling a bit stuck. Can you give me a nudge — maybe a tip, a prompt, or an example to help me move forward?";
+        actionsDiv.remove();
+        appendMessage('user', helpMsg);
+        state.messages.push({ role: 'user', content: helpMsg });
+        streamResponse();
+    });
+
+    actionsDiv.appendChild(helpBtn);
+    actionsDiv.appendChild(challengeBtn);
+    messagesEl.appendChild(actionsDiv);
+    scrollToBottom();
+}
 
 // === STAGE PROGRESS ===
 
@@ -231,7 +380,7 @@ function openStagePickerForStep(stepEl) {
     toolPickerMenu.classList.remove('hidden');
 }
 
-// Ask Wayde to recommend a tool for the given stage
+// Ask WAiDE to recommend a tool for the given stage
 function helpMeChooseForStage(mode) {
     const stageName = MODE_LABELS[mode] || mode;
     const toolNames = (TOOLS_BY_MODE[mode] || []).map(t => EXERCISE_LABELS[t] || t).join(', ');
@@ -286,7 +435,7 @@ $$('.card-exercise-btn').forEach(btn => {
 
 function startExercise(mode, exercise, startMsg = null) {
     // If transitioning from routing, use the user's own description as the exercise kickoff
-    // so Wayde can respond in context without asking them to repeat themselves
+    // so WAiDE can respond in context without asking them to repeat themselves
     let autoStartMsg = startMsg;
     if (!autoStartMsg && state.routing && state.messages.length > 0) {
         autoStartMsg = state.messages
@@ -304,8 +453,9 @@ function startExercise(mode, exercise, startMsg = null) {
     state.routing = false;
     state.rating = null;
 
-    // Hide welcome, show session bar
+    // Hide welcome, move input to session, show session bar
     welcome.classList.add('hidden');
+    moveInputToSession();
     sessionBar.classList.remove('hidden');
     sessionBar.dataset.mode = mode;
 
@@ -314,7 +464,7 @@ function startExercise(mode, exercise, startMsg = null) {
     sessionExercise.textContent = EXERCISE_LABELS[exercise] || exercise;
 
     // Update footer label
-    modeLabel.textContent = (EXERCISE_LABELS[exercise] || exercise) + ' · ';
+    modeLabel.innerHTML = `<a class="mode-label-link" href="toolbox.html#${exercise}" target="_blank" rel="noopener">${EXERCISE_LABELS[exercise] || exercise}</a> ·`;
 
     // Update stage progress strip
     updateStageProgress(mode);
@@ -329,7 +479,6 @@ function startExercise(mode, exercise, startMsg = null) {
     reportCard.classList.remove('report-preview');
     reportUnlock.classList.add('hidden');
     leadModal.classList.add('hidden');
-    wadeCta.classList.add('hidden');
     $('#reportDownloadBtn').classList.add('hidden');
     $('#reportShareBtn').classList.add('hidden');
     routingBack.classList.add('hidden');
@@ -337,10 +486,10 @@ function startExercise(mode, exercise, startMsg = null) {
     // Show report CTA immediately but disabled — enables after first exchange
     reportCta.classList.remove('hidden');
     reportCtaBtn.disabled = true;
-    reportCtaBtn.textContent = 'Talk to Wayde to build your report';
+    reportCtaBtn.textContent = 'Talk to WAiDE to build your report';
 
     if (autoStartMsg) {
-        // Use the user's actual description as the first message so Wayde skips
+        // Use the user's actual description as the first message so WAiDE skips
         // "what are you working on?" and responds directly in context
         appendMessage('user', autoStartMsg);
         state.messages = [{ role: 'user', content: autoStartMsg }];
@@ -358,7 +507,7 @@ function startExercise(mode, exercise, startMsg = null) {
         // Set a tool-specific placeholder hint
         inputField.placeholder = EXERCISE_HINTS[exercise] || 'Describe your challenge or idea...';
 
-        // Auto-kickoff: send a synthetic first message so Wayde opens the conversation
+        // Auto-kickoff: send a synthetic first message so WAiDE opens the conversation
         state.messages = [{ role: 'user', content: 'Please start the session.' }];
         streamResponse();
     }
@@ -374,6 +523,7 @@ function forceCloseSession() {
     state.reportGenerated = false;
     state.reportText = '';
     welcome.classList.remove('hidden');
+    moveInputToWelcome();
     sessionBar.classList.add('hidden');
     messagesEl.innerHTML = '';
     inputField.value = '';
@@ -389,12 +539,15 @@ function forceCloseSession() {
     reportCard.classList.remove('report-preview');
     reportUnlock.classList.add('hidden');
     leadModal.classList.add('hidden');
-    wadeCta.classList.add('hidden');
+
     $('#reportDownloadBtn').classList.add('hidden');
     $('#reportShareBtn').classList.add('hidden');
     routingBack.classList.add('hidden');
     state.projectContext = [];
     state.routing = false;
+    state.pushHarder = false;
+    $('.session-actions')?.remove();
+    $('#nextExercisePanel')?.remove();
     clearSession();
 }
 
@@ -408,8 +561,9 @@ sessionClose.addEventListener('click', () => {
     state.reportGenerated = false;
     state.reportText = '';
 
-    // Show welcome, hide session bar
+    // Show welcome, move input back, hide session bar
     welcome.classList.remove('hidden');
+    moveInputToWelcome();
     sessionBar.classList.add('hidden');
 
     // Clear messages, input, report elements, and project context
@@ -418,6 +572,7 @@ sessionClose.addEventListener('click', () => {
     inputField.placeholder = 'Describe your challenge or idea...';
     modeLabel.textContent = '';
     state.rating = null;
+    state.pushHarder = false;
     setPickerEnabled(false);
     toolPickerMenu.classList.add('hidden');
     reportCta.classList.add('hidden');
@@ -425,7 +580,7 @@ sessionClose.addEventListener('click', () => {
     reportCard.classList.remove('report-preview');
     reportUnlock.classList.add('hidden');
     leadModal.classList.add('hidden');
-    wadeCta.classList.add('hidden');
+
     $('#reportDownloadBtn').classList.add('hidden');
     $('#reportShareBtn').classList.add('hidden');
     routingBack.classList.add('hidden');
@@ -451,7 +606,7 @@ function swapToTool(mode, exercise, swapEl) {
     sessionBar.dataset.mode = mode;
     sessionMode.textContent = MODE_LABELS[mode] || mode;
     sessionExercise.textContent = EXERCISE_LABELS[exercise] || exercise;
-    modeLabel.textContent = (EXERCISE_LABELS[exercise] || exercise) + ' · ';
+    modeLabel.innerHTML = `<a class="mode-label-link" href="toolbox.html#${exercise}" target="_blank" rel="noopener">${EXERCISE_LABELS[exercise] || exercise}</a> ·`;
     updateStageProgress(mode);
 
     // Reset tool picker
@@ -462,10 +617,10 @@ function swapToTool(mode, exercise, swapEl) {
     reportCard.classList.add('hidden');
     reportCard.classList.remove('report-preview');
     reportUnlock.classList.add('hidden');
-    wadeCta.classList.add('hidden');
+
     reportCta.classList.remove('hidden');
     reportCtaBtn.disabled = true;
-    reportCtaBtn.textContent = 'Talk to Wayde to build your report';
+    reportCtaBtn.textContent = 'Talk to WAiDE to build your report';
 
     // Remove swap suggestion card from chat
     if (swapEl) swapEl.remove();
@@ -494,7 +649,7 @@ function swapToTool(mode, exercise, swapEl) {
         { role: 'user', content: `Let's switch to ${exerciseName}. Pick up from what we've covered and start this exercise.` }
     ];
 
-    // Stream Wayde's response with the new tool's system prompt
+    // Stream WAiDE's response with the new tool's system prompt
     streamResponse();
 }
 
@@ -510,6 +665,7 @@ function startRouting(text) {
     state.reportText = '';
 
     welcome.classList.add('hidden');
+    moveInputToSession();
     routingBack.classList.remove('hidden'); // show subtle back link immediately
     modeLabel.textContent = 'Finding your tool · ';
 
@@ -532,6 +688,7 @@ routingBackBtn.addEventListener('click', () => {
     state.routing = false;
 
     welcome.classList.remove('hidden');
+    moveInputToWelcome();
     messagesEl.innerHTML = '';
     inputField.value = ''; sendBtn.disabled = true;
     inputField.placeholder = 'Describe your challenge or idea...';
@@ -622,7 +779,7 @@ function maybeShowReportCta() {
 
 function saveSession() {
     if (!state.mode || state.mode === 'routing') return;
-    localStorage.setItem('wayde_session', JSON.stringify({
+    localStorage.setItem('waide_session', JSON.stringify({
         mode: state.mode,
         exercise: state.exercise,
         messages: state.messages,
@@ -635,7 +792,7 @@ function saveSession() {
 }
 
 function clearSession() {
-    localStorage.removeItem('wayde_session');
+    localStorage.removeItem('waide_session');
 }
 
 function restoreSession(session) {
@@ -652,11 +809,12 @@ function restoreSession(session) {
     });
 
     welcome.classList.add('hidden');
+    moveInputToSession();
     sessionBar.classList.remove('hidden');
     sessionBar.dataset.mode = state.mode;
     sessionMode.textContent = MODE_LABELS[state.mode] || state.mode;
     sessionExercise.textContent = EXERCISE_LABELS[state.exercise] || state.exercise;
-    modeLabel.textContent = (EXERCISE_LABELS[state.exercise] || state.exercise) + ' · ';
+    modeLabel.innerHTML = `<a class="mode-label-link" href="toolbox.html#${state.exercise}" target="_blank" rel="noopener">${EXERCISE_LABELS[state.exercise] || state.exercise}</a> ·`;
     reportCta.classList.remove('hidden');
     updateStageProgress(state.mode);
     // Restore tool picker state
@@ -686,7 +844,7 @@ function restoreSession(session) {
             breakEl.innerHTML = `<div class="msg-intro-label">${swappedName}</div>${desc}`;
             messagesEl.appendChild(breakEl);
         } else if (m.role === 'user' && m.content === 'Please start the session.') {
-            // Skip synthetic kickoff — Wayde's opening response is enough
+            // Skip synthetic kickoff — WAiDE's opening response is enough
         } else {
             appendMessage(m.role === 'user' ? 'user' : 'agent', m.content);
         }
@@ -767,6 +925,9 @@ async function streamResponse() {
     state.streaming = true;
     sendBtn.disabled = true;
 
+    // Remove session-actions while a response is being generated
+    $('.session-actions')?.remove();
+
     // Add typing indicator
     const typing = document.createElement('div');
     typing.className = 'typing';
@@ -785,7 +946,8 @@ async function streamResponse() {
                 mode: state.mode,
                 exercise: state.exercise,
                 messages: state.messages,
-                project_context: state.projectContext
+                project_context: state.projectContext,
+                push_harder: state.pushHarder
             })
         });
 
@@ -878,7 +1040,7 @@ async function streamResponse() {
         state.messages.push({ role: 'assistant', content: fullText });
 
         if (state.routing) {
-            // Render inline tool suggestion buttons if Wayde recommended any
+            // Render inline tool suggestion buttons if WAiDE recommended any
             if (suggestedKeys.length > 0) {
                 const suggestDiv = document.createElement('div');
                 suggestDiv.className = 'routing-suggestions';
@@ -896,7 +1058,7 @@ async function streamResponse() {
         } else {
             state.exchangeCount++;
             maybeShowReportCta();
-            // Show wrap-up card if Wayde signalled the exercise is complete
+            // Show wrap-up card if WAiDE signalled the exercise is complete
             if (wrapSignaled && !state.reportGenerated) {
                 renderWrapPrompt();
             }
@@ -906,6 +1068,7 @@ async function streamResponse() {
     state.streaming = false;
     sendBtn.disabled = false;
     inputField.focus();
+    renderSessionActions();
     saveSession();
 }
 
@@ -958,11 +1121,14 @@ function revealFullReport() {
     reportCard.classList.remove('report-preview');
     reportUnlock.classList.add('hidden');
     reportCta.classList.add('hidden'); // hide footer CTA — report is now visible
-    wadeCta.classList.remove('hidden');
+
 
     // Reveal report action buttons
     $('#reportDownloadBtn').classList.remove('hidden');
     $('#reportShareBtn').classList.remove('hidden');
+
+    // Show next exercise recommendation
+    renderNextExercisePanel();
 
     saveSession();
     scrollToBottom();
@@ -1032,7 +1198,7 @@ ul{padding-left:20px}li{margin-bottom:4px}p{margin:0 0 0.8em}
 </head><body>
 <div class="hd"><h1>Innovation Coaching Session Summary</h1><div class="meta">${mName} · ${exName} · ${date}</div></div>
 ${reportContent.innerHTML}
-<div class="ft">Generated by Wayde · Wade Institute of Entrepreneurship · wadeinstitute.org.au</div>
+<div class="ft">Generated by WAiDE · Wade Institute of Entrepreneurship · wadeinstitute.org.au</div>
 </body></html>`;
     const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
     const win = window.open(url, '_blank');
@@ -1079,11 +1245,58 @@ $('#reportNewSessionBtn')?.addEventListener('click', () => {
     forceCloseSession();
 });
 
+// === NEXT EXERCISE PANEL (shown after full report revealed) ===
+
+function renderNextExercisePanel() {
+    const next = NEXT_STAGE[state.mode];
+    if (!next) return; // Develop is the last stage
+    if ($('#nextExercisePanel')) return; // already shown
+
+    const panel = document.createElement('div');
+    panel.id = 'nextExercisePanel';
+    panel.className = 'next-exercise-panel';
+    const nextModeName = MODE_LABELS[next.mode] || next.mode;
+    const nextExName = EXERCISE_LABELS[next.exercise] || next.exercise;
+    const modeColor = next.mode; // reframe/ideate/debate/framework
+
+    panel.innerHTML = `
+        <div class="next-exercise-label">Ready to keep going?</div>
+        <div class="next-exercise-stage mode-${modeColor}">${nextModeName}</div>
+        <div class="next-exercise-name">${nextExName}</div>
+        <p class="next-exercise-desc">${EXERCISE_DESCS[next.exercise] || ''}</p>
+        <button class="next-exercise-btn next-exercise-btn-${modeColor}" id="nextExerciseBtn">Start ${nextExName} →</button>
+    `;
+
+    reportCard.insertAdjacentElement('afterend', panel);
+
+    panel.querySelector('#nextExerciseBtn').addEventListener('click', () => {
+        panel.remove();
+        navigateToStage(next.mode, next.exercise);
+    });
+}
+
+// === PAGE LOAD INIT ===
+// Place input box inside welcome (between tagline and cards) on initial load
+moveInputToWelcome();
+
+// === URL QUICK-START (?exercise=empathy-map) ===
+
+(function checkUrlParams() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const exerciseKey = params.get('exercise');
+        if (exerciseKey && EXERCISE_MODE[exerciseKey]) {
+            const mode = EXERCISE_MODE[exerciseKey];
+            setTimeout(() => startExercise(mode, exerciseKey), 150);
+        }
+    } catch(e) {}
+})();
+
 // === RESUME SAVED SESSION ===
 
 (function checkSavedSession() {
     try {
-        const session = JSON.parse(localStorage.getItem('wayde_session'));
+        const session = JSON.parse(localStorage.getItem('waide_session'));
         if (!session?.mode || !session.messages?.length) return;
         const banner = $('#resumeBanner');
         $('#resumeLabel').textContent = EXERCISE_LABELS[session.exercise] || session.exercise;

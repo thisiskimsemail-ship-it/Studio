@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Innovation Toolbox — Wade Institute</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app-shell toolbox-shell">
+
+    <header class="header">
+        <a href="index.html"><img class="logo" src="logo.png" alt="Wade Institute"></a>
+        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle light/dark mode">
+            <span class="theme-icon">☀</span>
+        </button>
+    </header>
+
+    <main class="toolbox">
+
+        <a class="toolbox-back" href="index.html">← Back to WAiDE</a>
+
+        <h1 class="toolbox-page-title">The Innovation Toolbox</h1>
+        <p class="toolbox-page-sub">Twelve structured methods across four stages of innovation — from understanding the problem to developing a plan.</p>
+
+        <!-- ── CLARIFY ── -->
+        <div class="toolbox-stage-header">
+            <span class="toolbox-stage-badge stage-badge-reframe">Clarify</span>
+            <span class="toolbox-stage-desc">Not sure what's really going on? Start here.</span>
+        </div>
+
+        <div class="tool-entry" id="five-whys">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">Five Whys</h2>
+                <span class="tool-entry-time">~15 min</span>
+            </div>
+            <p class="tool-entry-desc">Ask "why?" five times to move past symptoms and find what's really causing the problem. From Toyota's production system, taught at Harvard Business School.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">When a problem keeps recurring or your team is treating symptoms rather than root causes — before committing to a solution.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">A clear root cause statement and shared team understanding of why the problem really exists.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-entry" id="jtbd">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">Jobs to Be Done</h2>
+                <span class="tool-entry-time">~20 min</span>
+            </div>
+            <p class="tool-entry-desc">Understand what your customer or user is actually trying to accomplish. People don't adopt solutions — they hire them to make progress. Clayton Christensen's framework, used across industries from healthcare to education.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">Before designing a product or service, or when your existing solution isn't gaining traction with users.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">A clear "job statement" that defines what progress your user or customer is really trying to make.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-entry" id="empathy-map">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">Empathy Map</h2>
+                <span class="tool-entry-time">~20 min</span>
+            </div>
+            <p class="tool-entry-desc">Deeply understand your user before defining the problem — what they say, think, do, and feel. The gap between those is where the real opportunity lives. Stanford d.school's Empathise stage.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">Early in your design process, when you need to understand a specific user group before defining the problem you're solving.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">A shared map of your user's perspective — what they say, think, do and feel — and the gaps that reveal real opportunities.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── IDEATE ── -->
+        <div class="toolbox-stage-header">
+            <span class="toolbox-stage-badge stage-badge-ideate">Ideate</span>
+            <span class="toolbox-stage-desc">Have a direction? Generate bold ideas before settling on one.</span>
+        </div>
+
+        <div class="tool-entry" id="hmw">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">How Might We</h2>
+                <span class="tool-entry-time">~20 min</span>
+            </div>
+            <p class="tool-entry-desc">Reframe your problem as an opportunity and open up new directions before committing to one. Stanford d.school's bridge between defining a problem and generating solutions.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">After you've defined a problem and want to open up solution space before jumping to answers — best used after an empathy exercise.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">A set of "How Might We" questions that reframe your challenge as a design opportunity.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-entry" id="scamper">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">SCAMPER</h2>
+                <span class="tool-entry-time">~20 min</span>
+            </div>
+            <p class="tool-entry-desc">A structured checklist for generating ideas: Substitute, Combine, Adapt, Modify, Put to other uses, Eliminate, Reverse. Alex Osborn's creativity method, widely used in product design.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">When you have an existing product, service or process you want to improve — or when brainstorming feels stuck.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">A range of new ideas generated by systematically challenging each element of your current approach.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-entry" id="crazy-8s">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">Crazy 8s</h2>
+                <span class="tool-entry-time">~15 min</span>
+            </div>
+            <p class="tool-entry-desc">Generate 8 distinct ideas fast. Forces quantity over quality and breaks your fixation on the first "good" idea. The cornerstone of Google Ventures' Design Sprint methodology.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">When you need to move fast, break creative blocks, or push your team beyond the first "safe" idea.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">Eight distinct concepts in eight minutes — breadth over depth, quantity over quality.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── VALIDATE ── -->
+        <div class="toolbox-stage-header">
+            <span class="toolbox-stage-badge stage-badge-debate">Validate</span>
+            <span class="toolbox-stage-desc">Have an idea? Stress-test it before you commit.</span>
+        </div>
+
+        <div class="tool-entry" id="pre-mortem">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">Pre-Mortem</h2>
+                <span class="tool-entry-time">~20 min</span>
+            </div>
+            <p class="tool-entry-desc">Imagine your initiative didn't land. Work backwards to surface the risks you'd miss from an optimistic mindset. Research shows it increases risk identification by 30%.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">Before committing significant resources to an initiative — especially when your team is overly confident about a plan.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">A prioritised list of risks and failure scenarios — and the actions needed to prevent them.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-entry" id="devils-advocate">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">Devil's Advocate</h2>
+                <span class="tool-entry-time">~25 min</span>
+            </div>
+            <p class="tool-entry-desc">Stress-test your idea against its sharpest critic. Best used when your team is too aligned — or you need to find the holes before a major decision or investment of resources.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">When your team is too aligned, or before a major decision, pitch or significant investment of resources.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">A sharper, more defensible idea — with key objections surfaced and addressed before they matter.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-entry" id="rapid-experiment">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">Rapid Experiment</h2>
+                <span class="tool-entry-time">~20 min</span>
+            </div>
+            <p class="tool-entry-desc">Design the cheapest, fastest test that would kill your riskiest assumption. Validate before you build — the core principle behind Lean Startup.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">When you have a risky assumption that could invalidate your idea — before you invest in building the full solution.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">A clear experiment design with success criteria — and real-world data to inform your next move.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── DEVELOP ── -->
+        <div class="toolbox-stage-header">
+            <span class="toolbox-stage-badge stage-badge-framework">Develop</span>
+            <span class="toolbox-stage-desc">Idea validated? Now map out how you'll make it real.</span>
+        </div>
+
+        <div class="tool-entry" id="lean-canvas">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">Lean Canvas</h2>
+                <span class="tool-entry-time">~30 min</span>
+            </div>
+            <p class="tool-entry-desc">Map the key elements of your initiative on one page. Start with the problem, not the solution — then surface the assumptions you're least certain about.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">When developing a new business model, product or initiative and you need to align your team on the core assumptions.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">A single-page business model with key assumptions clearly mapped — and the most uncertain ones flagged for testing.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-entry" id="effectuation">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">Effectuation</h2>
+                <span class="tool-entry-time">~20 min</span>
+            </div>
+            <p class="tool-entry-desc">Don't start with a goal — start with what you already have. Expert entrepreneurs build from their own skills, network, and resources. By Saras Sarasvathy.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">When you're resource-constrained, operating in uncertainty, or want to move faster by starting with what you already have.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">A clear picture of your current means — who you are, what you know, who you know — and a set of realistic next steps.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-entry" id="analogical">
+            <div class="tool-entry-header">
+                <h2 class="tool-entry-name">Analogical Thinking</h2>
+                <span class="tool-entry-time">~20 min</span>
+            </div>
+            <p class="tool-entry-desc">Borrow solutions from other domains. How did nature solve this? How did another industry handle it? The technique behind many of history's most disruptive innovations — used by IDEO and DARPA.</p>
+            <div class="tool-entry-meta">
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">When to use</span>
+                    <p class="tool-meta-text">When you're stuck on a problem that feels unique, or when conventional solutions aren't working.</p>
+                </div>
+                <div class="tool-meta-block">
+                    <span class="tool-meta-label">What you get</span>
+                    <p class="tool-meta-text">Transferable insights from analogous domains — and a fresh perspective on your own challenge.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+</div><!-- /app-shell -->
+
+<!-- Universal site footer -->
+<div class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-brand">
+            <img class="site-footer-icon" src="wade-icon.png" alt="Wade Institute">
+            <span class="site-footer-orgname">Wade Institute of Entrepreneurship</span>
+        </div>
+        <div class="site-footer-body">
+            <p class="site-footer-heading">Talk to the Wade team</p>
+            <p class="site-footer-text">Interested in talking to a member of the Wade team about your innovation challenge?</p>
+            <div class="site-footer-contacts">
+                <a class="site-footer-link" href="mailto:enquiries@wadeinstitute.org.au">enquiries@wadeinstitute.org.au</a>
+                <a class="site-footer-link" href="tel:+61393441100">+61 3 9344 1100</a>
+            </div>
+        </div>
+        <div class="site-footer-cta-wrap">
+            <a class="site-footer-cta" href="https://wadeinstitute.org.au/start/" target="_blank" rel="noopener noreferrer">Explore Wade Programs →</a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Theme toggle (mirrors index.html behaviour)
+(function() {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    document.getElementById('themeToggle').addEventListener('click', function() {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        if (isLight) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'dark');
+            this.querySelector('.theme-icon').textContent = '☀';
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+            this.querySelector('.theme-icon').textContent = '☽';
+        }
+    });
+    if (saved === 'light') document.querySelector('.theme-icon').textContent = '☽';
+})();
+</script>
+
+</body>
+</html>
