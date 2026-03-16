@@ -1003,6 +1003,30 @@ async function streamResponse() {
         appendMessage('agent', 'Connection error. Make sure the server is running.');
     }
 
+    // Parse and render [OPTIONS: A | B] chips
+    if (fullText && agentDiv) {
+        const optMatch = fullText.match(/\[OPTIONS:\s*([^\]]+)\]/);
+        if (optMatch) {
+            fullText = fullText.replace(/\n?\[OPTIONS:\s*[^\]]+\]/, '').trim();
+            agentDiv.innerHTML = renderMarkdown(fullText);
+            const opts = optMatch[1].split('|').map(s => s.trim()).filter(Boolean);
+            const chipRow = document.createElement('div');
+            chipRow.className = 'option-chips';
+            opts.forEach(label => {
+                const btn = document.createElement('button');
+                btn.className = 'option-chip';
+                btn.textContent = label;
+                btn.addEventListener('click', () => {
+                    chipRow.remove();
+                    sendMessage(label);
+                });
+                chipRow.appendChild(btn);
+            });
+            agentDiv.after(chipRow);
+            scrollToBottom();
+        }
+    }
+
     // Save assistant response
     if (fullText) {
         // In routing mode: parse and strip [SUGGEST: key1, key2] tag
