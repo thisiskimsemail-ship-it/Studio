@@ -1011,6 +1011,16 @@ html[data-theme="light"] .mic-hint { background: rgba(30,25,79,0.88); }
 html[data-theme="light"] .mic-btn { border-color: rgba(30,25,79,0.15); }
 html[data-theme="light"] .mic-btn:hover { border-color: rgba(30,25,79,0.3); color: var(--text); }
 
+.input-disclaimer {
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    opacity: 0.5;
+    margin: 0.35rem auto 0;
+    max-width: 800px;
+    letter-spacing: 0.01em;
+}
+
 .input-hint {
     max-width: 800px;
     margin: 0.4rem auto 0;
