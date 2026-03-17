@@ -27,7 +27,7 @@
     --mono: 'GT Walsheim', sans-serif;
 }
 
-html { font-size: 20px; }
+html { font-size: 16px; }
 
 body {
     background: var(--bg);
@@ -752,7 +752,7 @@ body[data-mode="framework"] .logo { filter: sepia(1) hue-rotate(25deg) saturate(
 .msg {
     padding: 0.8rem 1rem;
     border-radius: 8px;
-    font-size: 1.125rem;
+    font-size: 1rem;
     line-height: 1.65;
     max-width: 85%;
     animation: fadeIn 0.2s ease;
