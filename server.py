@@ -1553,19 +1553,16 @@ def _markdown_to_html(text):
     return f'<p style="margin:0 0 10px;">{t}</p>'
 
 
-def _hs_send_email(api_key, from_email, to_email, subject, html_body):
-    """Send a single transactional email via HubSpot API."""
+def _resend_send_email(api_key, from_email, to_email, subject, html_body):
+    """Send a transactional email via Resend API."""
     payload = json.dumps({
-        "emailId": None,  # not using a template
-        "message": {
-            "from": from_email,
-            "to": to_email,
-            "subject": subject,
-            "html": html_body,
-        }
+        "from": from_email,
+        "to": [to_email],
+        "subject": subject,
+        "html": html_body,
     }).encode('utf-8')
     req = urllib.request.Request(
-        'https://api.hubapi.com/marketing/v3/transactional/single-email/send',
+        'https://api.resend.com/emails',
         data=payload,
         headers={
             'Authorization': f'Bearer {api_key}',
@@ -1577,56 +1574,19 @@ def _hs_send_email(api_key, from_email, to_email, subject, html_body):
         return resp.status
 
 
-def _hs_create_contact(api_key, lead):
-    """Create or update a HubSpot contact."""
-    first, *rest = lead['name'].split(' ', 1)
-    payload = json.dumps({
-        "properties": {
-            "email":     lead['email'],
-            "firstname": first,
-            "lastname":  rest[0] if rest else '',
-            "company":   lead['company'],
-            "jobtitle":  lead['role'],
-            "hs_lead_status": "NEW",
-            "lead_source": "WAiDE Innovation Coach",
-        }
-    }).encode('utf-8')
-    req = urllib.request.Request(
-        'https://api.hubapi.com/crm/v3/objects/contacts',
-        data=payload,
-        headers={
-            'Authorization': f'Bearer {api_key}',
-            'Content-Type': 'application/json',
-        },
-        method='POST'
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=10):
-            pass
-    except urllib.error.HTTPError as e:
-        if e.code == 409:
-            pass  # contact already exists — fine
-
-
 def _notify_wade(lead):
-    """Create HubSpot contact, email Wade, and send user a copy. Silent no-op if not configured."""
-    hs_key      = os.environ.get('HUBSPOT_API_KEY')
-    from_email  = os.environ.get('WADE_FROM_EMAIL', 'wayde@wadeinstitute.org.au')
+    """Email Wade and send user a copy of their report via Resend. Silent no-op if not configured."""
+    resend_key  = os.environ.get('RESEND_API_KEY')
+    from_email  = os.environ.get('WADE_FROM_EMAIL', 'WAiDE <wayde@wadeinstitute.org.au>')
     wade_email  = os.environ.get('WADE_NOTIFY_EMAIL', 'enquiries@wadeinstitute.org.au')
 
-    if not hs_key:
-        return  # HubSpot not configured — skip silently
+    if not resend_key:
+        return  # Resend not configured — skip silently
 
     rating_label = {'up': '👍 Positive', 'down': '👎 Negative'}.get(lead.get('rating'), '—')
     report_html  = _markdown_to_html(lead['report'])
 
-    # ── 1. Create/update HubSpot contact ──────────────────────────────────
-    try:
-        _hs_create_contact(hs_key, lead)
-    except Exception:
-        pass
-
-    # ── 2. Email Wade with full lead details + report ─────────────────────
+    # ── 1. Email Wade with full lead details + report ─────────────────────
     wade_html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
 <body style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;padding:20px;color:#1a1a2e;">
   <div style="background:#F15A22;padding:18px 24px;border-radius:6px 6px 0 0;">
@@ -1649,15 +1609,15 @@ def _notify_wade(lead):
 </body></html>"""
 
     try:
-        _hs_send_email(
-            hs_key, from_email, wade_email,
+        _resend_send_email(
+            resend_key, from_email, wade_email,
             f"New WAiDE Session: {lead['name']} — {lead['exercise']} ({lead['mode']})",
             wade_html
         )
     except Exception:
         pass
 
-    # ── 3. Email the user a copy of their report ──────────────────────────
+    # ── 2. Email the user a copy of their report ──────────────────────────
     user_html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
 <body style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;padding:20px;color:#1a1a2e;">
   <div style="background:#F15A22;padding:18px 24px;border-radius:6px 6px 0 0;">
@@ -1679,8 +1639,8 @@ def _notify_wade(lead):
 </body></html>"""
 
     try:
-        _hs_send_email(
-            hs_key, from_email, lead['email'],
+        _resend_send_email(
+            resend_key, from_email, lead['email'],
             f"Your WAiDE coaching session report — {lead['exercise']}",
             user_html
         )
