@@ -60,12 +60,13 @@ body {
     transition: filter 0.6s ease;
 }
 
-/* Logo shifts to stage colour when a session is active.
-   Base colour is orange #F15A22 (hue ~17°); offsets reach each stage colour. */
+/* Logo shifts to exact brand colours per active stage.
+   Brand palette: Orange #F15A22 · Pink #ED3694 · Teal #27BDBE · Yellow #E4E517 */
 body[data-mode="reframe"]   .logo { filter: hue-rotate(0deg)   drop-shadow(0 0 10px rgba(241,90,34,0.35)); }
-body[data-mode="ideate"]    .logo { filter: hue-rotate(308deg)  drop-shadow(0 0 10px rgba(236,54,147,0.35)); }
-body[data-mode="debate"]    .logo { filter: hue-rotate(164deg)  drop-shadow(0 0 10px rgba(38,189,190,0.35)); }
-body[data-mode="framework"] .logo { filter: hue-rotate(48deg) saturate(2.2) brightness(1.35); }
+body[data-mode="ideate"]    .logo { filter: hue-rotate(313deg)  drop-shadow(0 0 10px rgba(237,54,148,0.35)); }
+body[data-mode="debate"]    .logo { filter: hue-rotate(164deg)  drop-shadow(0 0 10px rgba(39,189,190,0.35)); }
+/* Yellow #E4E517 — sepia base needed to reach true chartreuse hue accurately */
+body[data-mode="framework"] .logo { filter: sepia(1) hue-rotate(40deg) saturate(8) brightness(1.4); }
 
 /* === SESSION BAR (shown during active exercise) === */
 .session-bar {
