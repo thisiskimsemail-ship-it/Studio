@@ -1412,6 +1412,25 @@ REPORT_PROMPT = """You are producing an innovation coaching summary for a sessio
 
 Write it the way a senior innovation coach writes to a founder or leader after a deep working session: clear, direct, specific, challenging, warm. No jargon. Respect their intelligence and their time. Use markdown.
 
+STEP 1 — IDENTIFY THE AUDIENCE CLUSTER
+Before writing a single word, read the conversation and identify which cluster this person belongs to:
+
+- INVESTOR: deploying or evaluating capital, building a portfolio, developing an investment thesis, working at a fund or family office
+- FOUNDER: building a venture, talking about customers, product, market, traction — early stage through scale
+- CORPORATE INNOVATOR: driving change inside an established organisation, navigating internal politics, building a business case, leading a team
+- EDUCATOR: teacher, school leader, or curriculum designer working in F-10 or tertiary education
+
+STEP 2 — APPLY THE CLUSTER LENS THROUGHOUT THE ENTIRE REPORT
+Adapt language, framing, and actions to match who this person actually is:
+
+INVESTOR lens — analytical and conviction-focused. Frame insights around thesis clarity, decision quality, and what the session revealed about their edge or blind spots. Actions should sharpen diligence, test assumptions about a sector or company, or strengthen their sourcing. Language: deploy, portfolio, thesis, conviction, returns, co-investor, diligence, risk-adjusted.
+
+FOUNDER lens — market-facing and build-oriented. Frame insights around customers, assumptions, and what's needed to generate real external signal. Actions should get them out of their head and in front of evidence — conversations, experiments, prototypes. Language: customers, build, test, validate, traction, market signal, assumption, pivot.
+
+CORPORATE INNOVATOR lens — strategic and organisationally aware. Frame insights around stakeholder dynamics, where the real resistance lies, and what a credible internal case looks like. Actions should navigate buy-in, pilot design, and coalition-building. Language: stakeholders, business case, pilot, alignment, sponsor, org culture, change management, leadership team.
+
+EDUCATOR lens — practical and classroom-ready. Frame insights around student outcomes, curriculum design, and what's immediately implementable in their specific school context. Actions should be concrete classroom activities, conversations with school leadership, or curriculum pilots. Language: students, curriculum, classroom, embed, school community, implement, year level, staff buy-in.
+
 Begin the report with the title: # Innovation Coaching Session Summary
 
 ## Innovation Coaching Session Summary
@@ -1429,10 +1448,14 @@ Begin the report with the title: # Innovation Coaching Session Summary
 2-3 open, provocative questions that the session surfaced but didn't fully resolve. These are outlier areas, blind spots, or tensions worth returning to. Not rhetorical — genuinely challenging. One sentence each.
 
 ### Recommended Actions
-5-7 concrete, specific next steps. You MUST include:
-- At least one hands-on, market-facing action (a real customer conversation, a cheap prototype, a live test — something that generates external signal, not just internal thinking)
-- At least one network-building action (a specific type of person to find, a community to join, an event to attend, a mentor to seek out)
-- The remaining steps should be equally concrete and time-bound
+5-7 concrete, specific next steps written through the cluster lens identified above. Every action must be grounded in this person's actual context — not generic advice.
+
+For INVESTORS: at least one action to test a thesis assumption with real data or a real conversation; at least one to strengthen deal flow or a co-investor relationship.
+For FOUNDERS: at least one market-facing action (customer conversation, cheap experiment, live test — external signal, not internal thinking); at least one to build a specific type of relationship.
+For CORPORATE INNOVATORS: at least one action to build internal support or test a business case assumption; at least one to find a peer or external reference point.
+For EDUCATORS: at least one action they can run in a classroom or school within the next two weeks; at least one conversation with school leadership or a colleague.
+
+All clusters: actions must be time-bound and specific — not "talk to customers" but "identify 3 [specific type] and run a 20-minute structured conversation this week."
 
 ### From the Wade Community
 Use the matching guide in the knowledge block. Recommend 1-2 people whose story speaks directly to something specific this person said or discovered — not a generic role match. Read the "Recommend when" field for each person before selecting. Write one sentence per person that names the specific parallel between their story and this user's challenge. Always render as a markdown link. If no one is a genuine fit, include only one person rather than forcing a second.
