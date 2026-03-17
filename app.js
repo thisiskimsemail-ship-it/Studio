@@ -77,7 +77,28 @@ document.addEventListener('DOMContentLoaded', () => {
         isRecording = false;
         micBtn.classList.remove('recording');
         micBtn.setAttribute('aria-label', 'Voice input');
+        if (e.error === 'not-allowed') {
+            showMicHint('Microphone access blocked — allow it in your browser settings.');
+        } else if (e.error === 'no-speech') {
+            showMicHint('No speech detected. Try again.');
+        } else if (e.error === 'network') {
+            showMicHint('Network error — voice input requires an internet connection.');
+        }
     };
+
+    function showMicHint(msg) {
+        let hint = document.getElementById('micHint');
+        if (!hint) {
+            hint = document.createElement('div');
+            hint.id = 'micHint';
+            hint.className = 'mic-hint';
+            micBtn.parentElement.appendChild(hint);
+        }
+        hint.textContent = msg;
+        hint.classList.add('visible');
+        clearTimeout(hint._t);
+        hint._t = setTimeout(() => hint.classList.remove('visible'), 4000);
+    }
 });
 
 // === TOOLBOX TOGGLE (mobile only) ===
