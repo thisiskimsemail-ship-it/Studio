@@ -1074,16 +1074,17 @@ html[data-theme="light"] .mic-btn:hover { border-color: rgba(30,25,79,0.3); colo
     text-transform: uppercase;
     color: var(--orange);
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: opacity 0.4s, color 0.4s;
     white-space: nowrap;
 }
 
 .report-cta-btn:hover:not(:disabled) { opacity: 0.7; }
 
+/* Hidden until earned — completely invisible while disabled, fades in when ready */
 .report-cta-btn:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-    color: var(--text-muted);
+    opacity: 0;
+    cursor: default;
+    pointer-events: none;
 }
 
 /* === UNIVERSAL SITE FOOTER === */
