@@ -1421,6 +1421,43 @@ def generate_report():
         return jsonify({'error': str(e)}), 500
 
 
+# === LINKEDIN POST GENERATOR ===
+
+@app.route('/api/linkedin', methods=['POST'])
+def generate_linkedin():
+    data = request.json
+    report_text = data.get('report', '')
+    exercise = data.get('exercise', '')
+    mode = data.get('mode', '')
+    exercise_name = EXERCISE_NAMES.get(exercise, exercise)
+    mode_name = MODE_NAMES.get(mode, mode)
+
+    prompt = (
+        f"Based on this innovation coaching session report (using the {exercise_name} tool in the {mode_name} stage), "
+        f"write a LinkedIn post that:\n"
+        f"- Is 3-5 lines long\n"
+        f"- Shares the most compelling insight or action from the session\n"
+        f"- Feels personal and genuine, not corporate\n"
+        f"- Ends with: 'Explored this with WAiDE — the Wade Institute's AI innovation coach. Try it at wadeinstitute.org.au/wayde'\n"
+        f"- Uses no hashtags\n"
+        f"- Output ONLY the post text, nothing else\n\n"
+        f"Session report:\n{report_text[:3000]}"
+    )
+    try:
+        response = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=300,
+            messages=[{'role': 'user', 'content': prompt}],
+        )
+        post_text = ''
+        for block in response.content:
+            if hasattr(block, 'text'):
+                post_text += block.text
+        return jsonify({'post': post_text.strip()})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 # === SHARED REPORT LINKS ===
 
 SHARED_REPORTS_FILE = os.path.join(os.path.dirname(__file__), 'shared_reports.json')

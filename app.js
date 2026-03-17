@@ -503,6 +503,7 @@ function startExercise(mode, exercise, startMsg = null) {
     leadModal.classList.add('hidden');
     $('#reportDownloadBtn').classList.add('hidden');
     $('#reportShareBtn').classList.add('hidden');
+    $('#reportLinkedInBtn')?.classList.add('hidden');
     routingBack.classList.add('hidden');
 
     // Show report CTA immediately but disabled — enables after first exchange
@@ -564,6 +565,7 @@ function forceCloseSession() {
 
     $('#reportDownloadBtn').classList.add('hidden');
     $('#reportShareBtn').classList.add('hidden');
+    $('#reportLinkedInBtn')?.classList.add('hidden');
     routingBack.classList.add('hidden');
     state.projectContext = [];
     state.routing = false;
@@ -605,6 +607,7 @@ sessionClose.addEventListener('click', () => {
 
     $('#reportDownloadBtn').classList.add('hidden');
     $('#reportShareBtn').classList.add('hidden');
+    $('#reportLinkedInBtn')?.classList.add('hidden');
     routingBack.classList.add('hidden');
     state.projectContext = [];
     state.routing = false;
@@ -1172,6 +1175,7 @@ function revealFullReport() {
     // Reveal report action buttons
     $('#reportDownloadBtn').classList.remove('hidden');
     $('#reportShareBtn').classList.remove('hidden');
+    $('#reportLinkedInBtn')?.classList.remove('hidden');
 
     // Show next exercise recommendation
     renderNextExercisePanel();
@@ -1325,6 +1329,30 @@ async function shareReport() {
 }
 
 $('#reportShareBtn').addEventListener('click', shareReport);
+
+// === LINKEDIN POST ===
+
+async function copyForLinkedIn() {
+    const btn = $('#reportLinkedInBtn');
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+    try {
+        const data = await fetch('/api/linkedin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ report: state.reportText, mode: state.mode, exercise: state.exercise })
+        }).then(r => r.json());
+        if (data.error) throw new Error(data.error);
+        await navigator.clipboard.writeText(data.post);
+        btn.textContent = 'Copied! ✓';
+        setTimeout(() => { btn.textContent = 'Copy for LinkedIn'; btn.disabled = false; }, 2500);
+    } catch(e) {
+        btn.textContent = 'Failed — try again';
+        btn.disabled = false;
+    }
+}
+
+$('#reportLinkedInBtn')?.addEventListener('click', copyForLinkedIn);
 
 // === REPORT META + NEW SESSION ===
 
