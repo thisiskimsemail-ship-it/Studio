@@ -65,8 +65,8 @@ body {
 body[data-mode="reframe"]   .logo { filter: hue-rotate(0deg)   drop-shadow(0 0 10px rgba(241,90,34,0.35)); }
 body[data-mode="ideate"]    .logo { filter: hue-rotate(313deg)  drop-shadow(0 0 10px rgba(237,54,148,0.35)); }
 body[data-mode="debate"]    .logo { filter: hue-rotate(164deg)  drop-shadow(0 0 10px rgba(39,189,190,0.35)); }
-/* Yellow #E4E517 — sepia base needed to reach true chartreuse hue accurately */
-body[data-mode="framework"] .logo { filter: sepia(1) hue-rotate(40deg) saturate(8) brightness(1.4); }
+/* Yellow #E4E517 — sepia base ~38°, +25° lands at 63° which matches #E4E517 hue exactly */
+body[data-mode="framework"] .logo { filter: sepia(1) hue-rotate(25deg) saturate(4) brightness(1.45); }
 
 /* === SESSION BAR (shown during active exercise) === */
 .session-bar {
