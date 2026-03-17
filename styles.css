@@ -479,6 +479,7 @@ body {
     grid-column: 1 / -1;
     width: 100%;
     max-width: 660px;
+    margin: 0 auto;
     text-align: center;
     font-size: 0.9rem;
     color: var(--text-dim);
@@ -508,7 +509,8 @@ body {
     gap: 1.2rem;
     width: 100%;
     max-width: 1200px;
-    align-items: flex-start;
+    margin: 0 auto;
+    align-items: start;
 }
 
 .welcome-card {
