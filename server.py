@@ -1501,108 +1501,154 @@ a{{color:#F15A22}}
 LEADS_FILE = os.path.join(os.path.dirname(__file__), 'leads.json')
 
 
+def _markdown_to_html(text):
+    """Minimal markdown → HTML for email bodies."""
+    import re
+    t = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+    t = re.sub(r'^### (.+)$', r'<h3 style="font-size:14px;margin:16px 0 6px;">\1</h3>', t, flags=re.MULTILINE)
+    t = re.sub(r'^## (.+)$',  r'<h2 style="font-size:15px;border-bottom:2px solid #F15A22;padding-bottom:5px;margin:20px 0 8px;">\1</h2>', t, flags=re.MULTILINE)
+    t = re.sub(r'^# (.+)$',   r'<h1 style="font-size:18px;margin:0 0 8px;">\1</h1>', t, flags=re.MULTILINE)
+    t = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', t)
+    t = re.sub(r'\[([^\]]+)\]\((https?://[^)]+)\)', r'<a href="\2" style="color:#F15A22;">\1</a>', t)
+    t = re.sub(r'^- (.+)$', r'<li style="margin-bottom:4px;">\1</li>', t, flags=re.MULTILINE)
+    t = re.sub(r'(<li[^>]*>.*?</li>\n?)+', lambda m: f'<ul style="padding-left:20px;margin:0 0 10px;">{m.group(0)}</ul>', t)
+    t = re.sub(r'\n\n+', '</p><p style="margin:0 0 10px;">', t)
+    return f'<p style="margin:0 0 10px;">{t}</p>'
+
+
+def _hs_send_email(api_key, from_email, to_email, subject, html_body):
+    """Send a single transactional email via HubSpot API."""
+    payload = json.dumps({
+        "emailId": None,  # not using a template
+        "message": {
+            "from": from_email,
+            "to": to_email,
+            "subject": subject,
+            "html": html_body,
+        }
+    }).encode('utf-8')
+    req = urllib.request.Request(
+        'https://api.hubapi.com/marketing/v3/transactional/single-email/send',
+        data=payload,
+        headers={
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json',
+        },
+        method='POST'
+    )
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        return resp.status
+
+
+def _hs_create_contact(api_key, lead):
+    """Create or update a HubSpot contact."""
+    first, *rest = lead['name'].split(' ', 1)
+    payload = json.dumps({
+        "properties": {
+            "email":     lead['email'],
+            "firstname": first,
+            "lastname":  rest[0] if rest else '',
+            "company":   lead['company'],
+            "jobtitle":  lead['role'],
+            "hs_lead_status": "NEW",
+            "lead_source": "WAiDE Innovation Coach",
+        }
+    }).encode('utf-8')
+    req = urllib.request.Request(
+        'https://api.hubapi.com/crm/v3/objects/contacts',
+        data=payload,
+        headers={
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json',
+        },
+        method='POST'
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10):
+            pass
+    except urllib.error.HTTPError as e:
+        if e.code == 409:
+            pass  # contact already exists — fine
+
+
 def _notify_wade(lead):
-    """Email the report to Wade when a new lead submits. Silent no-op if SMTP not configured."""
-    notify_email = os.environ.get('WADE_NOTIFY_EMAIL', 'enquiries@wadeinstitute.org.au')
-    smtp_host = os.environ.get('SMTP_HOST')
-    smtp_user = os.environ.get('SMTP_USER')
-    smtp_pass = os.environ.get('SMTP_PASS')
-    if not all([smtp_host, smtp_user, smtp_pass]):
-        return  # SMTP not configured — skip silently
-    smtp_port = int(os.environ.get('SMTP_PORT', 587))
+    """Create HubSpot contact, email Wade, and send user a copy. Silent no-op if not configured."""
+    hs_key      = os.environ.get('HUBSPOT_API_KEY')
+    from_email  = os.environ.get('WADE_FROM_EMAIL', 'wayde@wadeinstitute.org.au')
+    wade_email  = os.environ.get('WADE_NOTIFY_EMAIL', 'enquiries@wadeinstitute.org.au')
+
+    if not hs_key:
+        return  # HubSpot not configured — skip silently
 
     rating_label = {'up': '👍 Positive', 'down': '👎 Negative'}.get(lead.get('rating'), '—')
-    subject = f"New WAiDE Session: {lead['name']} — {lead['exercise']} ({lead['mode']})"
+    report_html  = _markdown_to_html(lead['report'])
 
-    # Plain-text fallback
-    plain = (
-        f"New WAiDE Innovation Coaching Session.\n\n"
-        f"Name: {lead['name']}\n"
-        f"Email: {lead['email']}\n"
-        f"Company: {lead['company']}\n"
-        f"Role: {lead['role']}\n"
-        f"Stage: {lead['mode']}\n"
-        f"Exercise: {lead['exercise']}\n"
-        f"Rating: {rating_label}\n"
-        f"Time: {lead['timestamp']}\n\n"
-        f"--- REPORT ---\n\n{lead['report']}"
-    )
+    # ── 1. Create/update HubSpot contact ──────────────────────────────────
+    try:
+        _hs_create_contact(hs_key, lead)
+    except Exception:
+        pass
 
-    # HTML email
-    report_html = lead['report'].replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-    # Basic markdown → HTML for report body
-    import re
-    report_html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', report_html, flags=re.MULTILINE)
-    report_html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', report_html, flags=re.MULTILINE)
-    report_html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', report_html, flags=re.MULTILINE)
-    report_html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', report_html)
-    report_html = re.sub(r'\[([^\]]+)\]\((https?://[^)]+)\)', r'<a href="\2">\1</a>', report_html)
-    report_html = re.sub(r'^- (.+)$', r'<li>\1</li>', report_html, flags=re.MULTILINE)
-    report_html = re.sub(r'(<li>.*</li>\n?)+', lambda m: f'<ul>{m.group(0)}</ul>', report_html)
-    report_html = re.sub(r'\n\n', '</p><p>', report_html)
-    report_html = f'<p>{report_html}</p>'
-
-    html = f"""<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"></head>
+    # ── 2. Email Wade with full lead details + report ─────────────────────
+    wade_html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
 <body style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;padding:20px;color:#1a1a2e;">
-  <div style="background:#F15A22;padding:20px 24px;border-radius:6px 6px 0 0;">
-    <h2 style="margin:0;color:#fff;font-size:18px;">New WAiDE Session</h2>
-    <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Wade Institute of Entrepreneurship</p>
+  <div style="background:#F15A22;padding:18px 24px;border-radius:6px 6px 0 0;">
+    <h2 style="margin:0;color:#fff;font-size:17px;">New WAiDE Session</h2>
+    <p style="margin:3px 0 0;color:rgba(255,255,255,0.85);font-size:12px;">Wade Institute of Entrepreneurship</p>
   </div>
-  <div style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;padding:24px;">
-    <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:14px;">
-      <tr style="background:#f8f8f8;">
-        <td style="padding:8px 12px;font-weight:bold;width:120px;border-bottom:1px solid #eee;">Name</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;">{lead['name']}</td>
-      </tr>
-      <tr>
-        <td style="padding:8px 12px;font-weight:bold;border-bottom:1px solid #eee;">Email</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;"><a href="mailto:{lead['email']}" style="color:#F15A22;">{lead['email']}</a></td>
-      </tr>
-      <tr style="background:#f8f8f8;">
-        <td style="padding:8px 12px;font-weight:bold;border-bottom:1px solid #eee;">Company</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;">{lead['company']}</td>
-      </tr>
-      <tr>
-        <td style="padding:8px 12px;font-weight:bold;border-bottom:1px solid #eee;">Role</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;">{lead['role']}</td>
-      </tr>
-      <tr style="background:#f8f8f8;">
-        <td style="padding:8px 12px;font-weight:bold;border-bottom:1px solid #eee;">Stage</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;">{lead['mode']}</td>
-      </tr>
-      <tr>
-        <td style="padding:8px 12px;font-weight:bold;border-bottom:1px solid #eee;">Exercise</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;">{lead['exercise']}</td>
-      </tr>
-      <tr style="background:#f8f8f8;">
-        <td style="padding:8px 12px;font-weight:bold;">Rating</td>
-        <td style="padding:8px 12px;">{rating_label}</td>
-      </tr>
+  <div style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;padding:22px;">
+    <table style="width:100%;border-collapse:collapse;margin-bottom:22px;font-size:13.5px;">
+      <tr style="background:#f8f8f8;"><td style="padding:7px 12px;font-weight:bold;width:110px;border-bottom:1px solid #eee;">Name</td><td style="padding:7px 12px;border-bottom:1px solid #eee;">{lead['name']}</td></tr>
+      <tr><td style="padding:7px 12px;font-weight:bold;border-bottom:1px solid #eee;">Email</td><td style="padding:7px 12px;border-bottom:1px solid #eee;"><a href="mailto:{lead['email']}" style="color:#F15A22;">{lead['email']}</a></td></tr>
+      <tr style="background:#f8f8f8;"><td style="padding:7px 12px;font-weight:bold;border-bottom:1px solid #eee;">Company</td><td style="padding:7px 12px;border-bottom:1px solid #eee;">{lead['company']}</td></tr>
+      <tr><td style="padding:7px 12px;font-weight:bold;border-bottom:1px solid #eee;">Role</td><td style="padding:7px 12px;border-bottom:1px solid #eee;">{lead['role']}</td></tr>
+      <tr style="background:#f8f8f8;"><td style="padding:7px 12px;font-weight:bold;border-bottom:1px solid #eee;">Stage</td><td style="padding:7px 12px;border-bottom:1px solid #eee;">{lead['mode']}</td></tr>
+      <tr><td style="padding:7px 12px;font-weight:bold;border-bottom:1px solid #eee;">Exercise</td><td style="padding:7px 12px;border-bottom:1px solid #eee;">{lead['exercise']}</td></tr>
+      <tr style="background:#f8f8f8;"><td style="padding:7px 12px;font-weight:bold;">Rating</td><td style="padding:7px 12px;">{rating_label}</td></tr>
     </table>
-    <h3 style="font-size:15px;border-bottom:2px solid #F15A22;padding-bottom:6px;margin-top:0;">Innovation Coaching Session Summary</h3>
-    <div style="font-family:Georgia,serif;font-size:14px;line-height:1.7;color:#222;">
-      {report_html}
+    <div style="font-family:Georgia,serif;font-size:13.5px;line-height:1.7;color:#222;">{report_html}</div>
+  </div>
+  <p style="text-align:center;font-size:11px;color:#aaa;margin-top:14px;">WAiDE &middot; <a href="https://wadeinstitute.org.au" style="color:#F15A22;">wadeinstitute.org.au</a></p>
+</body></html>"""
+
+    try:
+        _hs_send_email(
+            hs_key, from_email, wade_email,
+            f"New WAiDE Session: {lead['name']} — {lead['exercise']} ({lead['mode']})",
+            wade_html
+        )
+    except Exception:
+        pass
+
+    # ── 3. Email the user a copy of their report ──────────────────────────
+    user_html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;padding:20px;color:#1a1a2e;">
+  <div style="background:#F15A22;padding:18px 24px;border-radius:6px 6px 0 0;">
+    <h2 style="margin:0;color:#fff;font-size:17px;">Your Innovation Coaching Session Report</h2>
+    <p style="margin:3px 0 0;color:rgba(255,255,255,0.85);font-size:12px;">{lead['mode']} &middot; {lead['exercise']}</p>
+  </div>
+  <div style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;padding:22px;">
+    <p style="font-size:14px;color:#444;margin:0 0 18px;">Hi {lead['name'].split()[0]}, here's a copy of your WAiDE coaching session report to refer back to.</p>
+    <div style="font-family:Georgia,serif;font-size:13.5px;line-height:1.7;color:#222;">{report_html}</div>
+    <div style="margin-top:28px;padding:16px 18px;border:1.5px solid #F15A22;border-radius:5px;background:#fdf9f7;">
+      <p style="font-size:8.5px;font-weight:bold;letter-spacing:0.12em;text-transform:uppercase;color:#F15A22;margin:0 0 6px;">Ready to go deeper?</p>
+      <p style="font-size:13.5px;font-weight:bold;color:#12103a;margin:0 0 7px;">Talk to the Wade Team</p>
+      <p style="font-size:12.5px;color:#444;margin:0 0 10px;">Interested in working with Wade Institute to build your innovation capability further?</p>
+      <p style="font-size:12px;color:#666;margin:0 0 10px;">enquiries@wadeinstitute.org.au &nbsp;&middot;&nbsp; +61 3 9344 1100</p>
+      <a href="https://wadeinstitute.org.au/programs/" style="font-size:12px;font-weight:bold;color:#F15A22;text-decoration:none;">Explore Wade Programs &rarr;</a>
     </div>
   </div>
-  <p style="text-align:center;font-size:11px;color:#999;margin-top:16px;">
-    WAiDE AI Coaching Tool &middot; <a href="https://wadeinstitute.org.au" style="color:#F15A22;">wadeinstitute.org.au</a>
-  </p>
-</body>
-</html>"""
+  <p style="text-align:center;font-size:11px;color:#aaa;margin-top:14px;">Generated by WAiDE AI &middot; Wade Institute of Entrepreneurship &middot; <a href="https://wadeinstitute.org.au" style="color:#F15A22;">wadeinstitute.org.au</a></p>
+</body></html>"""
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = smtp_user
-    msg['To'] = notify_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(plain, 'plain'))
-    msg.attach(MIMEText(html, 'html'))
-
-    with smtplib.SMTP(smtp_host, smtp_port) as server:
-        server.starttls()
-        server.login(smtp_user, smtp_pass)
-        server.send_message(msg)
+    try:
+        _hs_send_email(
+            hs_key, from_email, lead['email'],
+            f"Your WAiDE coaching session report — {lead['exercise']}",
+            user_html
+        )
+    except Exception:
+        pass
 
 @app.route('/api/lead', methods=['POST'])
 def capture_lead():
