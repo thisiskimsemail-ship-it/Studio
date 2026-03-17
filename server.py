@@ -1438,7 +1438,7 @@ def generate_linkedin():
         f"- Is 3-5 lines long\n"
         f"- Shares the most compelling insight or action from the session\n"
         f"- Feels personal and genuine, not corporate\n"
-        f"- Ends with: 'Explored this with WAiDE — the Wade Institute's AI innovation coach. Try it at wadeinstitute.org.au/wayde'\n"
+        f"- Ends with: 'Explored this with WAiDE — the Wade Institute's AI innovation coach. Try it at wadeinstitute.org.au/waide'\n"
         f"- Uses no hashtags\n"
         f"- Output ONLY the post text, nothing else\n\n"
         f"Session report:\n{report_text[:3000]}"
