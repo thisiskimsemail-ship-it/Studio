@@ -1634,20 +1634,27 @@ def generate_linkedin():
     mode_name = MODE_NAMES.get(mode, mode)
 
     prompt = (
-        f"Based on this innovation coaching session report (using the {exercise_name} tool in the {mode_name} stage), "
-        f"write a LinkedIn post that:\n"
-        f"- Is 3-5 lines long\n"
-        f"- Shares the most compelling insight or action from the session\n"
-        f"- Feels personal and genuine, not corporate\n"
-        f"- Ends with: 'Explored this with WAiDE — the Wade Institute's AI innovation coach. Try it at wadeinstitute.org.au/waide'\n"
-        f"- Uses no hashtags\n"
-        f"- Output ONLY the post text, nothing else\n\n"
+        f"Based on this innovation coaching session report, write a LinkedIn post using EXACTLY this structure:\n\n"
+        f"Line 1 — Hook: one sentence naming the tool used and what they worked on. "
+        f"Tool: {exercise_name}. First person, specific to their actual challenge — not generic.\n"
+        f"Example: 'Used Five Whys today to get to the real reason our onboarding was losing people.'\n\n"
+        f"Line 2 — Key insight: one sentence. The most surprising or clarifying thing that emerged. "
+        f"Start with 'The real insight:' or 'What I discovered:' or similar. Pull it directly from the report.\n\n"
+        f"Lines 3–5 — Top 3 next steps as a short arrow list:\n"
+        f"Three things I'm doing next:\n"
+        f"→ [action 1]\n"
+        f"→ [action 2]\n"
+        f"→ [action 3]\n"
+        f"Pull these from the Recommended Actions section. Keep them concrete and specific.\n\n"
+        f"Final line — exactly this: "
+        f"'Explored this with WAiDE — Wade Institute's AI innovation coach. Try it at wadeinstitute.org.au/waide'\n\n"
+        f"No hashtags. No intro or outro. Output ONLY the post text. Warm and personal, not corporate.\n\n"
         f"Session report:\n{report_text[:3000]}"
     )
     try:
         response = client.messages.create(
             model="claude-haiku-4-5-20251001",
-            max_tokens=300,
+            max_tokens=400,
             messages=[{'role': 'user', 'content': prompt}],
         )
         post_text = ''
