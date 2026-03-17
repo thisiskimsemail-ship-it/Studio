@@ -1577,7 +1577,7 @@ def _resend_send_email(api_key, from_email, to_email, subject, html_body):
 def _notify_wade(lead):
     """Email Wade and send user a copy of their report via Resend. Silent no-op if not configured."""
     resend_key  = os.environ.get('RESEND_API_KEY')
-    from_email  = os.environ.get('WADE_FROM_EMAIL', 'WAiDE <wayde@wadeinstitute.org.au>')
+    from_email  = os.environ.get('WADE_FROM_EMAIL', 'WAiDE <enquiries@wadeinstitute.org.au>')
     wade_email  = os.environ.get('WADE_NOTIFY_EMAIL', 'enquiries@wadeinstitute.org.au')
 
     if not resend_key:
