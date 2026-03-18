@@ -1341,9 +1341,12 @@ async function generateReport() {
     reportCtaBtn.textContent = 'Generating report...';
 
     try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 90000); // 90s timeout
         const res = await fetch('/api/report', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
             body: JSON.stringify({
                 mode: state.mode,
                 exercise: state.exercise,
@@ -1351,6 +1354,7 @@ async function generateReport() {
                 parking_lot: state.parkingLot
             })
         });
+        clearTimeout(timeout);
 
         const data = await res.json();
 

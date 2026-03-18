@@ -1916,8 +1916,12 @@ def generate_report():
     exercise_context = f"IMPORTANT: This session used the **{exercise_name}** exercise from the **{mode_name}** stage. Always refer to this exercise by its correct name ({exercise_name}) — do not use any other exercise name even if it appears in the conversation history.\n\n"
     system = exercise_context + REPORT_PROMPT.replace('{WADE_PROGRAMS_PLACEHOLDER}', programs_block).replace('{EXERCISE_PLACEHOLDER}', exercise_name) + parking_lot_block + WADE_KNOWLEDGE_BLOCK
 
-    # Ensure last message is from user (API requirement)
+    # Trim messages to avoid token limits — keep first 2 and last 10 messages
     report_messages = list(messages)
+    if len(report_messages) > 14:
+        report_messages = report_messages[:2] + report_messages[-10:]
+
+    # Ensure last message is from user (API requirement)
     if report_messages and report_messages[-1].get('role') == 'assistant':
         report_messages.append({
             'role': 'user',
