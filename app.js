@@ -517,8 +517,12 @@ function startExercise(mode, exercise, startMsg = null) {
     sessionMode.textContent = MODE_LABELS[mode] || mode;
     sessionExercise.textContent = EXERCISE_LABELS[exercise] || exercise;
 
+    // Update session label
+    const sessionLabelEl = document.getElementById('sessionLabelExercise');
+    if (sessionLabelEl) sessionLabelEl.textContent = EXERCISE_LABELS[exercise] || exercise;
+
     // Update footer label
-    modeLabel.innerHTML = `<a class="mode-label-link" href="toolbox.html#${exercise}" target="_blank" rel="noopener">${EXERCISE_LABELS[exercise] || exercise}</a> ·`;
+    modeLabel.innerHTML = `${EXERCISE_LABELS[exercise] || exercise} ·`;
 
     // Update stage progress strip
     updateStageProgress(mode);

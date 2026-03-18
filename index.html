@@ -25,15 +25,12 @@
         <span class="js-state" id="sessionMode"></span>
         <span class="js-state" id="sessionExercise"></span>
         <button class="js-state" id="toolPickerBtn" disabled></button>
-        <!-- Stage nav — takes full width; active stage shows current tool + acts as picker -->
-        <div class="stage-progress" id="stageProgress">
-            <div class="stage-step" data-stage="reframe"><span class="stage-dot"></span><span class="stage-name">Clarify</span></div>
-            <div class="stage-conn"></div>
-            <div class="stage-step" data-stage="ideate"><span class="stage-dot"></span><span class="stage-name">Ideate</span></div>
-            <div class="stage-conn"></div>
-            <div class="stage-step" data-stage="debate"><span class="stage-dot"></span><span class="stage-name">Validate</span></div>
-            <div class="stage-conn"></div>
-            <div class="stage-step" data-stage="framework"><span class="stage-dot"></span><span class="stage-name">Develop</span></div>
+        <!-- Session label -->
+        <div class="session-label" id="sessionLabel">
+            <span class="session-label-exercise" id="sessionLabelExercise">Lean Canvas</span>
+        </div>
+        <!-- Hidden legacy elements for compatibility -->
+        <div class="stage-progress hidden" id="stageProgress">
             <div class="tool-picker-menu hidden" id="toolPickerMenu"></div>
         </div>
         <span class="phase-indicator" id="phaseIndicator"></span>
@@ -61,6 +58,7 @@
       <div class="workshop-layout" id="workshopLayout">
         <div class="chat-pane" id="chatPane">
         <div class="welcome" id="welcome">
+            <div class="welcome-hero"></div>
             <h1 class="welcome-title">Wade Studio</h1>
             <p class="welcome-sub">Your virtual workshop space.</p>
             <p class="welcome-tagline">Bring a challenge. Roll up your sleeves. Wade Studio will facilitate you through the right framework — so you do the thinking, and leave with a clear plan.</p>
@@ -72,135 +70,7 @@
                 <button class="resume-dismiss" id="resumeDismiss">✕</button>
             </div>
 
-            <div class="welcome-cards" style="display:none;">
-                <p class="cards-heading" id="cardsHeading">Workshop Toolbox <span class="cards-chevron">▾</span></p>
-                <p class="cards-sub">Practical tools from the world's leading institutions and companies — from Stanford to INSEAD, Google to Toyota — paired with insights from the Wade Institute community. Choose a framework yourself, or let Wade Studio recommend one based on your challenge. <a class="cards-sub-link" href="toolbox.html" target="_blank" rel="noopener">Learn more →</a></p>
-
-                <div class="welcome-card card-reframe">
-                    <div class="card-header">
-                        <span class="card-mode-name">Clarify</span>
-                        <span class="card-mode-desc">Understand the problem before solving it.</span>
-                    </div>
-                    <div class="card-exercises">
-                        <button class="card-exercise-btn" data-mode="reframe" data-exercise="five-whys">
-                            <div class="exercise-header">
-                                <span class="exercise-name">Five Whys</span>
-                                <span class="exercise-time">~15 min</span>
-                            </div>
-                            <p class="exercise-desc">Dig past the surface problem to uncover root causes.</p>
-                        </button>
-                        <button class="card-exercise-btn" data-mode="reframe" data-exercise="jtbd">
-                            <div class="exercise-header">
-                                <span class="exercise-name">Jobs to Be Done</span>
-                                <span class="exercise-time">~20 min</span>
-                            </div>
-                            <p class="exercise-desc">Identify what your customer is really trying to achieve.</p>
-                        </button>
-                        <button class="card-exercise-btn" data-mode="reframe" data-exercise="empathy-map">
-                            <div class="exercise-header">
-                                <span class="exercise-name">Empathy Map</span>
-                                <span class="exercise-time">~20 min</span>
-                            </div>
-                            <p class="exercise-desc">Explore what your users think, feel, see and do.</p>
-                        </button>
-                    </div>
-                    <a class="card-learn-more" href="toolbox.html#five-whys" target="_blank" rel="noopener">Learn more →</a>
-                </div>
-
-                <div class="welcome-card card-ideate">
-                    <div class="card-header">
-                        <span class="card-mode-name">Ideate</span>
-                        <span class="card-mode-desc">Generate possibilities before narrowing your focus.</span>
-                    </div>
-                    <div class="card-exercises">
-                        <button class="card-exercise-btn" data-mode="ideate" data-exercise="hmw">
-                            <div class="exercise-header">
-                                <span class="exercise-name">How Might We</span>
-                                <span class="exercise-time">~20 min</span>
-                            </div>
-                            <p class="exercise-desc">Turn challenges into opportunity-focused questions.</p>
-                        </button>
-                        <button class="card-exercise-btn" data-mode="ideate" data-exercise="scamper">
-                            <div class="exercise-header">
-                                <span class="exercise-name">SCAMPER</span>
-                                <span class="exercise-time">~20 min</span>
-                            </div>
-                            <p class="exercise-desc">Push an idea further by adapting, combining, and reimagining it.</p>
-                        </button>
-                        <button class="card-exercise-btn" data-mode="ideate" data-exercise="crazy-8s">
-                            <div class="exercise-header">
-                                <span class="exercise-name">Crazy 8s</span>
-                                <span class="exercise-time">~15 min</span>
-                            </div>
-                            <p class="exercise-desc">Rapid-fire ideation to unlock creative momentum.</p>
-                        </button>
-                    </div>
-                    <a class="card-learn-more" href="toolbox.html#hmw" target="_blank" rel="noopener">Learn more →</a>
-                </div>
-
-                <div class="welcome-card card-debate">
-                    <div class="card-header">
-                        <span class="card-mode-name">Validate</span>
-                        <span class="card-mode-desc">Test your thinking before committing resources.</span>
-                    </div>
-                    <div class="card-exercises">
-                        <button class="card-exercise-btn" data-mode="debate" data-exercise="pre-mortem">
-                            <div class="exercise-header">
-                                <span class="exercise-name">Pre-Mortem</span>
-                                <span class="exercise-time">~20 min</span>
-                            </div>
-                            <p class="exercise-desc">Imagine the idea failed. What caused it?</p>
-                        </button>
-                        <button class="card-exercise-btn" data-mode="debate" data-exercise="devils-advocate">
-                            <div class="exercise-header">
-                                <span class="exercise-name">Devil's Advocate</span>
-                                <span class="exercise-time">~25 min</span>
-                            </div>
-                            <p class="exercise-desc">Challenge assumptions and strengthen your case.</p>
-                        </button>
-                        <button class="card-exercise-btn" data-mode="debate" data-exercise="rapid-experiment">
-                            <div class="exercise-header">
-                                <span class="exercise-name">Rapid Experiment</span>
-                                <span class="exercise-time">~20 min</span>
-                            </div>
-                            <p class="exercise-desc">Design small tests to learn quickly.</p>
-                        </button>
-                    </div>
-                    <a class="card-learn-more" href="toolbox.html#pre-mortem" target="_blank" rel="noopener">Learn more →</a>
-                </div>
-
-                <div class="welcome-card card-framework">
-                    <div class="card-header">
-                        <span class="card-mode-name">Develop</span>
-                        <span class="card-mode-desc">Turn insight into action.</span>
-                    </div>
-                    <div class="card-exercises">
-                        <button class="card-exercise-btn" data-mode="framework" data-exercise="lean-canvas">
-                            <div class="exercise-header">
-                                <span class="exercise-name">Lean Canvas</span>
-                                <span class="exercise-time">~30 min</span>
-                            </div>
-                            <p class="exercise-desc">Map your venture or initiative on a single page.</p>
-                        </button>
-                        <button class="card-exercise-btn" data-mode="framework" data-exercise="effectuation">
-                            <div class="exercise-header">
-                                <span class="exercise-name">Effectuation</span>
-                                <span class="exercise-time">~20 min</span>
-                            </div>
-                            <p class="exercise-desc">Start with what you have and build from there.</p>
-                        </button>
-                        <button class="card-exercise-btn" data-mode="framework" data-exercise="analogical">
-                            <div class="exercise-header">
-                                <span class="exercise-name">Analogical Thinking</span>
-                                <span class="exercise-time">~20 min</span>
-                            </div>
-                            <p class="exercise-desc">Look to other industries for inspiration and solutions.</p>
-                        </button>
-                    </div>
-                    <a class="card-learn-more" href="toolbox.html#lean-canvas" target="_blank" rel="noopener">Learn more →</a>
-                </div>
-
-            </div>
+            <!-- Toolbox cards removed — routing handles tool selection -->
         </div>
         <div class="messages" id="messages"></div>
 
@@ -316,7 +186,7 @@
     <!-- Prompt bar — fixed at viewport bottom, always accessible -->
     <footer class="input-area">
         <form class="input-form" id="inputForm">
-            <textarea class="input-field" id="inputField" placeholder="What are you working on?" rows="1"></textarea>
+            <textarea class="input-field" id="inputField" placeholder="Tell me about your challenge..." rows="1"></textarea>
             <div class="input-btns">
                 <button class="mic-btn" type="button" id="micBtn" title="Voice input" aria-label="Voice input">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -347,6 +217,6 @@
         </div>
     </footer>
 
-    <script src="app.js?v=63"></script>
+    <script src="app.js?v=64"></script>
 </body>
 </html>

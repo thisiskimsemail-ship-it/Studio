@@ -82,6 +82,21 @@ body[data-mode="framework"] .logo { filter: sepia(1) hue-rotate(25deg) saturate(
 .session-bar.hidden { display: none; }
 .js-state { display: none; }
 
+/* Session label — replaces stage dots */
+.session-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.session-label-exercise {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--orange);
+    letter-spacing: 0.03em;
+}
+
 .session-mode {
     font-family: var(--mono);
     font-size: 0.875rem;
@@ -757,6 +772,22 @@ html[data-theme="light"] .parking-lot-toggle:hover { border-color: rgba(30,25,79
     max-width: 580px;
     line-height: 1.65;
     margin-bottom: 2rem;
+}
+
+/* Welcome hero — full bleed image above text */
+.welcome-hero {
+    width: 100vw;
+    height: 50vh;
+    margin: -1.5rem -1.5rem 2rem;
+    background: url('banner.jpg') center center / cover no-repeat;
+}
+
+@media (max-width: 640px) {
+    .welcome-hero { height: 35vh; margin-bottom: 1.5rem; }
+}
+
+@media (max-width: 640px) {
+    .welcome-hero { padding: 2.5rem 1rem 1.5rem; }
 }
 
 .welcome-title {
