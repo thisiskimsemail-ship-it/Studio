@@ -1886,6 +1886,192 @@ Keep it short. This is a 5-minute tool — the report should match that energy.
 
 {WADE_PROGRAMS_PLACEHOLDER}"""
 
+# === UNIVERSAL REPORT SECTIONS (appended to every tool-specific report) ===
+UNIVERSAL_REPORT_SECTIONS = """
+
+### Pete's Notes
+2-3 observations from the coaching session. What was strong in their thinking? What patterns did Pete notice? Where are the gaps they should be aware of? Write as Pete — direct, warm, honest. Not a summary of what happened, but what Pete observed that the user might not see themselves.
+
+### Your 48-Hour Action
+One single, specific, concrete action the user committed to (or should commit to) in the next 48 hours. Frame as: "In the next 48 hours: [specific action]." This should be the most important thing they can do RIGHT NOW — not a list, one thing.
+
+### What to Explore Next
+Recommend the most relevant NEXT Studio tool based on what emerged in this session. Use these progressions:
+- After Elevator Pitch → Five Whys (dig deeper into the problem) or Lean Canvas (map the full model)
+- After Five Whys → Crazy 8s or How Might We (now that they know the real problem, explore solutions)
+- After Crazy 8s → How Might We (go deeper) or Pre-Mortem (stress-test the top idea)
+- After How Might We → Pre-Mortem or Devil's Advocate (validate the chosen direction)
+- After Pre-Mortem → Devil's Advocate (deeper validation) or Lean Canvas (build the model)
+- After Devil's Advocate → Effectuation or Lean Canvas (move to action)
+- After Effectuation → Lean Canvas (formalise the model)
+- After Lean Canvas → suggest revisiting a weaker block with a Clarify or Validate tool
+
+Frame as: "Your next move in The Studio: **[Tool Name]** — [one sentence explaining why this tool connects to what they just uncovered]. [Link to toolbox](toolbox.html)"
+
+### Wade Institute — Programs Worth Exploring
+STEP 1: Identify if the user is a FOUNDER, CORPORATE INNOVATOR, INVESTOR, or EDUCATOR.
+
+STEP 2: For CORPORATE users, ALWAYS recommend **Think Like an Entrepreneur** as the primary course — it's designed for leading change inside organisations.
+
+STEP 3: Recommend exactly ONE Wade program. Include ALL of:
+- Program name as a markdown link to wadeinstitute.org.au
+- Format tag in brackets: (3-Day Immersive) or (Online) or (Full-Year) or (Custom/Bespoke)
+- One sentence connecting it to something specific from the session
+- "When you're ready: [link to course page]"
+
+### Suggested Reading
+2-3 Wade community blog posts relevant to this user's specific challenge. Each with:
+- Post title as a markdown link
+- One sentence explaining why it's relevant to THIS session (not generic)
+Match by: topic first, then stage, then user context. Diversity of angle — aim for one alumni story, one opinion piece, one practical how-to.
+
+### About This Session
+One sentence naming {EXERCISE_PLACEHOLDER}. Link to toolbox: [Learn more about this tool](toolbox.html#{EXERCISE_KEY}).
+
+{WADE_PROGRAMS_PLACEHOLDER}"""
+
+# === TOOL-SPECIFIC REPORT PROMPTS (Section A — Core Output) ===
+
+FIVE_WHYS_REPORT = """You are producing a Five Whys session report for The Studio at Wade Institute of Entrepreneurship.
+Write clearly, directly, using markdown. Frame everything as the user's own thinking.
+
+# Five Whys Report
+
+### The Root Cause Chain
+Display the problem chain as a numbered cascade from the original problem to the root cause:
+
+1. **Original problem**: [what they started with]
+2. **Why?** [first answer]
+3. **Why?** [second answer]
+4. **Why?** [third answer]
+5. **Why?** [fourth answer]
+6. **Root cause**: [what they uncovered] — highlight this in bold
+
+### Reframed Problem Statement
+Pete's reframed version of the problem based on the root cause — one sentence. Frame as: "The real problem isn't [original framing]. It's [root cause framing]."
+""" + UNIVERSAL_REPORT_SECTIONS
+
+CRAZY_8S_REPORT = """You are producing a Crazy 8s session report for The Studio at Wade Institute of Entrepreneurship.
+Write clearly, directly, using markdown. Frame everything as the user's own thinking.
+
+# Crazy 8s Report
+
+### Your 8 Ideas
+List all 8 ideas as numbered items. Mark the user's top 2-3 picks with a star or bold:
+
+1. [idea]
+2. [idea]
+3. **[top pick]**
+...etc.
+
+### Patterns Pete Noticed
+One paragraph: what patterns emerged across the 8 ideas? Were most ideas about automation? Customer experience? Cost reduction? Name the pattern — it reveals where the user's instincts point.
+
+### Top Pick Analysis
+For each of the user's top 2-3 picks, one sentence on what makes it promising and one sentence on the biggest assumption to test.
+""" + UNIVERSAL_REPORT_SECTIONS
+
+HMW_REPORT = """You are producing a How Might We session report for The Studio at Wade Institute of Entrepreneurship.
+Write clearly, directly, using markdown. Frame everything as the user's own thinking.
+
+# How Might We Report
+
+### Original Problem
+The problem statement they started with — one sentence.
+
+### Your HMW Statements
+List all HMW statements generated (5-8). Bold the ones the user selected for deeper exploration:
+
+- How might we [statement]?
+- **How might we [selected statement]?**
+- ...
+
+### Solutions Explored
+For each selected HMW statement:
+**HMW: [statement]**
+- Solution 1: [description]
+- Solution 2: [description]
+
+### Recommended Direction
+Pete's recommendation: which solution direction has the most potential, and why. One paragraph.
+""" + UNIVERSAL_REPORT_SECTIONS
+
+PREMORTEM_REPORT = """You are producing a Pre-Mortem session report for The Studio at Wade Institute of Entrepreneurship.
+Write clearly, directly, using markdown. Frame everything as the user's own thinking.
+
+# Pre-Mortem Report
+
+### The Idea Being Tested
+One sentence describing what was stress-tested.
+
+### Failure Scenarios
+Group all failure reasons by category. For each, show the risk and its severity:
+
+**Market Risk**
+- [failure scenario] — Likelihood: High/Medium/Low
+
+**Product Risk**
+- [failure scenario] — Likelihood: High/Medium/Low
+
+**Team Risk** / **Financial Risk** / **Competition Risk** / **Timing Risk**
+(same format for each that was discussed)
+
+### The Biggest Risk
+Prominently highlight the single most dangerous failure mode: the one that is both most likely AND most fatal. One sentence explaining why this is the one to watch.
+
+### Mitigations
+For the top 2-3 risks, concrete actions to reduce each one. Frame as: "To reduce [risk]: [specific action by specific date]."
+""" + UNIVERSAL_REPORT_SECTIONS
+
+DEVILS_ADVOCATE_REPORT = """You are producing a Devil's Advocate session report for The Studio at Wade Institute of Entrepreneurship.
+Write clearly, directly, using markdown. Frame everything as the user's own thinking.
+
+# Devil's Advocate Report
+
+### The Idea
+One sentence summary of what was defended.
+
+### Challenge & Defence
+
+For each dimension Pete challenged, show a table row:
+
+| Dimension | Pete's Challenge | Your Defence | Strength |
+|---|---|---|---|
+| Problem Validity | [challenge] | [defence] | Strong / Needs work / Weak |
+| Customer Clarity | [challenge] | [defence] | Strong / Needs work / Weak |
+| Solution Fit | [challenge] | [defence] | Strong / Needs work / Weak |
+| Competitive Landscape | [challenge] | [defence] | Strong / Needs work / Weak |
+| Execution Risk | [challenge] | [defence] | Strong / Needs work / Weak |
+
+### Biggest Gap
+The weakest dimension — one sentence on what it is and one sentence on how to close it.
+""" + UNIVERSAL_REPORT_SECTIONS
+
+EFFECTUATION_REPORT = """You are producing an Effectuation session report for The Studio at Wade Institute of Entrepreneurship.
+Write clearly, directly, using markdown. Frame everything as the user's own thinking.
+
+# Effectuation Report
+
+### Your Means Inventory (Bird in Hand)
+What you already have — listed as bullet points:
+- **Who you are**: [identity, skills, abilities]
+- **What you know**: [expertise, experience]
+- **Who you know**: [network, contacts]
+
+### Affordable Loss
+What you can afford to risk — time, money, reputation. One sentence.
+
+### Crazy Quilt (Your Allies)
+3-5 people who could join or help, and what each would contribute:
+- [Person/type] — [what they bring]
+
+### Lemonade (Surprises to Leverage)
+Setbacks or surprises that could be turned into advantages. Bullet points.
+
+### First Move
+The specific, concrete action for the next 48 hours. One sentence, bold and prominent.
+""" + UNIVERSAL_REPORT_SECTIONS
+
 EXERCISE_NAMES = {
     'five-whys': 'Five Whys',
     'hmw': 'How Might We',
@@ -2066,9 +2252,19 @@ def generate_report():
         parking_lot_block = f"\n\nPARKING_LOT_ITEMS:\n{items}\n"
 
     exercise_context = f"IMPORTANT: This session used the **{exercise_name}** exercise from the **{mode_name}** stage. Always refer to this exercise by its correct name ({exercise_name}) — do not use any other exercise name even if it appears in the conversation history.\n\n"
-    # Use pitch-specific report prompt for elevator pitch
-    report_template = PITCH_REPORT_PROMPT if exercise == 'elevator-pitch' else REPORT_PROMPT
-    system = exercise_context + report_template.replace('{WADE_PROGRAMS_PLACEHOLDER}', programs_block).replace('{EXERCISE_PLACEHOLDER}', exercise_name) + parking_lot_block + WADE_KNOWLEDGE_BLOCK
+    # Select tool-specific report prompt
+    TOOL_REPORT_PROMPTS = {
+        'elevator-pitch': PITCH_REPORT_PROMPT,
+        'five-whys': FIVE_WHYS_REPORT,
+        'crazy-8s': CRAZY_8S_REPORT,
+        'hmw': HMW_REPORT,
+        'pre-mortem': PREMORTEM_REPORT,
+        'devils-advocate': DEVILS_ADVOCATE_REPORT,
+        'effectuation': EFFECTUATION_REPORT,
+        'lean-canvas': REPORT_PROMPT,  # Lean Canvas uses the original detailed template
+    }
+    report_template = TOOL_REPORT_PROMPTS.get(exercise, REPORT_PROMPT)
+    system = exercise_context + report_template.replace('{WADE_PROGRAMS_PLACEHOLDER}', programs_block).replace('{EXERCISE_PLACEHOLDER}', exercise_name).replace('{EXERCISE_KEY}', exercise) + parking_lot_block + WADE_KNOWLEDGE_BLOCK
 
     # Trim messages to avoid token limits — keep first 2 and last 10 messages
     report_messages = list(messages)
