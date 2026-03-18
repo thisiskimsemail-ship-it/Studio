@@ -1963,6 +1963,152 @@ def generate_linkedin():
         return jsonify({'error': str(e)}), 500
 
 
+# === LEAN CANVAS EXPORT ===
+
+CANVAS_PROMPT = """Extract a filled Lean Canvas from this workshop conversation. Return ONLY valid JSON with these exact keys. For each block, provide 1-3 bullet points based on what was actually discussed. If a block wasn't covered, use ["To explore"]. Return raw JSON only — no markdown fences.
+
+{
+  "problem": ["..."],
+  "solution": ["..."],
+  "uvp": ["..."],
+  "unfair_advantage": ["..."],
+  "customer_segments": ["..."],
+  "key_metrics": ["..."],
+  "channels": ["..."],
+  "cost_structure": ["..."],
+  "revenue_streams": ["..."]
+}"""
+
+CANVAS_HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lean Canvas — Wade Studio</title>
+<style>
+@page { size: landscape; margin: 0.5cm; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'GT Walsheim', 'Space Grotesk', 'Helvetica Neue', sans-serif; background: #12103a; color: #f5f5f5; padding: 20px; }
+h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em; color: #F15A22; }
+.canvas { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 0; border: 2px solid rgba(255,255,255,0.15); border-radius: 8px; height: calc(100vh - 70px); overflow: hidden; }
+.block { background: #1a1750; padding: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); }
+.block h2 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; color: #F15A22; }
+.block ul { list-style: none; font-size: 0.7rem; line-height: 1.5; color: #b8b5d0; }
+.block ul li { margin-bottom: 4px; }
+.block ul li::before { content: "• "; opacity: 0.5; }
+.hypothesis { opacity: 0.5; font-style: italic; }
+/* Grid positions */
+.problem { grid-column: 1; grid-row: 1 / 3; }
+.solution { grid-column: 2; grid-row: 1; }
+.key-metrics { grid-column: 2; grid-row: 2; }
+.uvp { grid-column: 3; grid-row: 1 / 3; }
+.unfair-advantage { grid-column: 4; grid-row: 1; }
+.channels { grid-column: 4; grid-row: 2; }
+.customer-segments { grid-column: 5; grid-row: 1 / 3; }
+.cost-structure { grid-column: 1 / 3; grid-row: 3; }
+.revenue-streams { grid-column: 3 / 6; grid-row: 3; }
+.footer { text-align: center; font-size: 0.6rem; opacity: 0.7; margin-top: 8px; }
+</style>
+</head>
+<body>
+<h1>Lean Canvas</h1>
+<div class="canvas">
+  <div class="block problem"><h2>Problem</h2><ul>{problem}</ul></div>
+  <div class="block solution"><h2>Solution</h2><ul>{solution}</ul></div>
+  <div class="block key-metrics"><h2>Key Metrics</h2><ul>{key_metrics}</ul></div>
+  <div class="block uvp"><h2>Unique Value Proposition</h2><ul>{uvp}</ul></div>
+  <div class="block unfair-advantage"><h2>Unfair Advantage</h2><ul>{unfair_advantage}</ul></div>
+  <div class="block channels"><h2>Channels</h2><ul>{channels}</ul></div>
+  <div class="block customer-segments"><h2>Customer Segments</h2><ul>{customer_segments}</ul></div>
+  <div class="block cost-structure"><h2>Cost Structure</h2><ul>{cost_structure}</ul></div>
+  <div class="block revenue-streams"><h2>Revenue Streams</h2><ul>{revenue_streams}</ul></div>
+</div>
+<p class="footer">Wade Institute of Entrepreneurship — The Studio</p>
+</body>
+</html>"""
+
+SHARED_CANVASES_FILE = os.path.join(os.path.dirname(__file__), 'shared_canvases.json')
+
+@app.route('/api/canvas', methods=['POST'])
+def generate_canvas():
+    data = request.json
+    messages = data.get('messages', [])
+
+    api_messages = list(messages) if messages else []
+    if not api_messages:
+        return jsonify({'error': 'No conversation to extract canvas from'}), 400
+    if api_messages[-1].get('role') == 'assistant':
+        api_messages.append({'role': 'user', 'content': 'Extract the Lean Canvas from our conversation.'})
+
+    try:
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=800,
+            system=CANVAS_PROMPT,
+            messages=api_messages,
+        )
+        text = ''
+        for block in response.content:
+            if hasattr(block, 'text'):
+                text += block.text
+
+        clean = text.strip()
+        if clean.startswith('```'):
+            clean = clean.split('\n', 1)[-1]
+            clean = clean.rsplit('```', 1)[0]
+            clean = clean.strip()
+
+        canvas_data = json.loads(clean)
+
+        # Build HTML
+        def render_items(items):
+            html = ''
+            for item in items:
+                cls = ' class="hypothesis"' if 'to explore' in item.lower() or 'hypothesis' in item.lower() else ''
+                html += f'<li{cls}>{item}</li>'
+            return html
+
+        html = CANVAS_HTML_TEMPLATE.format(
+            problem=render_items(canvas_data.get('problem', ['To explore'])),
+            solution=render_items(canvas_data.get('solution', ['To explore'])),
+            uvp=render_items(canvas_data.get('uvp', ['To explore'])),
+            unfair_advantage=render_items(canvas_data.get('unfair_advantage', ['To explore'])),
+            customer_segments=render_items(canvas_data.get('customer_segments', ['To explore'])),
+            key_metrics=render_items(canvas_data.get('key_metrics', ['To explore'])),
+            channels=render_items(canvas_data.get('channels', ['To explore'])),
+            cost_structure=render_items(canvas_data.get('cost_structure', ['To explore'])),
+            revenue_streams=render_items(canvas_data.get('revenue_streams', ['To explore'])),
+        )
+
+        # Save for sharing
+        canvas_id = str(uuid.uuid4())[:8]
+        try:
+            canvases = json.loads(open(SHARED_CANVASES_FILE).read()) if os.path.exists(SHARED_CANVASES_FILE) else []
+        except:
+            canvases = []
+        canvases.append({'id': canvas_id, 'html': html, 'data': canvas_data, 'created': datetime.now(timezone.utc).isoformat()})
+        with open(SHARED_CANVASES_FILE, 'w') as f:
+            json.dump(canvases, f)
+
+        return jsonify({'canvas_id': canvas_id, 'canvas_data': canvas_data})
+    except json.JSONDecodeError as e:
+        return jsonify({'error': f'Could not parse canvas: {str(e)}', 'raw': text}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/canvas/<canvas_id>')
+def view_canvas(canvas_id):
+    try:
+        canvases = json.loads(open(SHARED_CANVASES_FILE).read()) if os.path.exists(SHARED_CANVASES_FILE) else []
+        canvas = next((c for c in canvases if c['id'] == canvas_id), None)
+        if canvas:
+            return canvas['html']
+        return 'Canvas not found', 404
+    except:
+        return 'Canvas not found', 404
+
+
 # === SHARED REPORT LINKS ===
 
 SHARED_REPORTS_FILE = os.path.join(os.path.dirname(__file__), 'shared_reports.json')
