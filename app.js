@@ -1717,15 +1717,15 @@ const BOARD_LAYOUTS = {
     },
     'lean-canvas': {
         zones: [
-            { id: 'problem', name: 'Problem', empty: 'Top 1-3 problems' },
-            { id: 'solution', name: 'Solution', empty: 'Top features' },
-            { id: 'uvp', name: 'Unique Value Prop', empty: 'Single clear message' },
-            { id: 'unfair', name: 'Unfair Advantage', empty: 'Can\'t be copied' },
-            { id: 'segments', name: 'Customer Segments', empty: 'Target customers' },
-            { id: 'channels', name: 'Channels', empty: 'Path to customers' },
-            { id: 'revenue', name: 'Revenue Streams', empty: 'How you make money' },
-            { id: 'costs', name: 'Cost Structure', empty: 'Key costs' },
-            { id: 'metrics', name: 'Key Metrics', empty: 'Numbers that matter' }
+            { id: 'problem', name: 'Problem', empty: 'Top 1-3 problems', hint: 'What are the top 3 problems?', colour: 'orange' },
+            { id: 'solution', name: 'Solution', empty: 'Top features', hint: 'How you solve each problem', colour: 'pink' },
+            { id: 'uvp', name: 'Unique Value Prop', empty: 'Single clear message', hint: 'Why are you different?', colour: 'pink' },
+            { id: 'unfair', name: 'Unfair Advantage', empty: 'Can\'t be copied', hint: 'What can\'t be easily copied?', colour: 'yellow' },
+            { id: 'segments', name: 'Customer Segments', empty: 'Target customers', hint: 'Who are your target customers?', colour: 'orange' },
+            { id: 'channels', name: 'Channels', empty: 'Path to customers', hint: 'How you reach customers', colour: 'pink' },
+            { id: 'revenue', name: 'Revenue Streams', empty: 'How you make money', hint: 'Revenue model', colour: 'teal' },
+            { id: 'costs', name: 'Cost Structure', empty: 'Key costs', hint: 'Key cost drivers', colour: 'teal' },
+            { id: 'metrics', name: 'Key Metrics', empty: 'Numbers that matter', hint: 'Key numbers to track', colour: 'teal' }
         ],
         gridClass: 'board-grid-canvas'
     }
@@ -1753,8 +1753,9 @@ function switchBoardLayout(mode) {
     // Rebuild zone HTML
     zonesContainer.className = 'board-zones ' + layout.gridClass;
     zonesContainer.innerHTML = layout.zones.map(z => `
-        <div class="board-zone" data-zone="${z.id}">
+        <div class="board-zone" data-zone="${z.id}"${z.colour ? ` data-colour="${z.colour}"` : ''}>
             <div class="zone-header"><span class="zone-name">${z.name}</span><span class="zone-count" data-zone="${z.id}">0</span></div>
+            ${z.hint ? `<div class="zone-hint">${z.hint}</div>` : ''}
             <div class="zone-cards" data-zone="${z.id}"></div>
             <div class="zone-empty">${z.empty}</div>
         </div>
@@ -1788,9 +1789,18 @@ function addBoardCard(text, zone, stage, source) {
 }
 
 function removeBoardCard(cardId) {
+    const card = state.board.cards.find(c => c.id === cardId);
     state.board.cards = state.board.cards.filter(c => c.id !== cardId);
     const el = document.querySelector(`.board-card[data-card-id="${cardId}"]`);
     if (el) el.remove();
+    // Show hint again if zone is now empty
+    if (card) {
+        const zoneCards = document.querySelector(`.zone-cards[data-zone="${card.zone}"]`);
+        if (zoneCards && !zoneCards.children.length) {
+            const hint = zoneCards.closest('.board-zone')?.querySelector('.zone-hint');
+            if (hint) hint.style.display = '';
+        }
+    }
     updateBoardCounts();
     saveSession();
 }
@@ -1828,6 +1838,36 @@ function renderBoardCard(card) {
         e.stopPropagation();
         removeBoardCard(card.id);
     });
+    // Inline edit on double-click
+    div.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        const textEl = div.querySelector('.board-card-text');
+        if (!textEl || textEl.querySelector('textarea')) return;
+        const current = card.text;
+        const ta = document.createElement('textarea');
+        ta.className = 'board-card-edit';
+        ta.value = current;
+        ta.rows = 2;
+        textEl.innerHTML = '';
+        textEl.appendChild(ta);
+        ta.focus();
+        ta.select();
+        div.draggable = false;
+        const save = () => {
+            const newText = ta.value.trim();
+            if (newText && newText !== current) {
+                card.text = newText;
+                saveSession();
+            }
+            textEl.textContent = card.text;
+            div.draggable = true;
+        };
+        ta.addEventListener('blur', save);
+        ta.addEventListener('keydown', (ke) => {
+            if (ke.key === 'Enter' && !ke.shiftKey) { ke.preventDefault(); ta.blur(); }
+            if (ke.key === 'Escape') { ta.value = current; ta.blur(); }
+        });
+    });
     // Drag handlers
     div.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', card.id);
@@ -1838,6 +1878,9 @@ function renderBoardCard(card) {
         div.classList.remove('dragging');
     });
     zoneEl.appendChild(div);
+    // Hide hint when zone has cards
+    const hint = zoneEl.closest('.board-zone')?.querySelector('.zone-hint');
+    if (hint) hint.style.display = 'none';
 }
 
 function renderBoard() {
@@ -2151,3 +2194,43 @@ function renderMarkdown(text) {
 
     return html;
 }
+
+// === TEXT SIZE CONTROL ===
+document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('textSizeToggle');
+    const picker = document.getElementById('textSizePicker');
+    if (!toggle || !picker) return;
+
+    // Restore saved size
+    const saved = localStorage.getItem('studio_text_size') || 'medium';
+    applyTextSize(saved);
+
+    toggle.addEventListener('click', () => {
+        picker.classList.toggle('hidden');
+    });
+
+    picker.querySelectorAll('.text-size-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const size = btn.dataset.size;
+            applyTextSize(size);
+            localStorage.setItem('studio_text_size', size);
+            picker.classList.add('hidden');
+        });
+    });
+
+    // Close picker when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.text-size-control')) {
+            picker.classList.add('hidden');
+        }
+    });
+
+    function applyTextSize(size) {
+        document.body.classList.remove('text-small', 'text-large');
+        if (size === 'small') document.body.classList.add('text-small');
+        if (size === 'large') document.body.classList.add('text-large');
+        picker.querySelectorAll('.text-size-option').forEach(b => {
+            b.classList.toggle('active', b.dataset.size === size);
+        });
+    }
+});
