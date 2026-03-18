@@ -17,6 +17,13 @@ load_dotenv()
 app = Flask(__name__, static_folder='.', static_url_path='')
 client = anthropic.Anthropic()
 
+@app.route('/api/debug-key')
+def debug_key():
+    key = os.environ.get('ANTHROPIC_API_KEY', 'NOT SET')
+    if key == 'NOT SET':
+        return jsonify({'status': 'NO KEY', 'env_keys': [k for k in os.environ if 'ANTHRO' in k.upper()]})
+    return jsonify({'status': 'OK', 'key_prefix': key[:12], 'key_suffix': key[-4:], 'key_length': len(key)})
+
 # === PROGRAM PATHS ===
 PROGRAM_PATHS = {
     'founder': {
