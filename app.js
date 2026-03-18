@@ -550,17 +550,16 @@ function startExercise(mode, exercise, startMsg = null) {
     $('#reportLinkedInBtn')?.classList.add('hidden');
     routingBack.classList.add('hidden');
 
-    // Switch board layout based on exercise
-    if (exercise === 'lean-canvas') {
-        switchBoardLayout('lean-canvas');
-    } else if (exercise === 'elevator-pitch') {
-        switchBoardLayout('elevator-pitch');
-        // If coming from elevator pitch, carry components into canvas
-        if (Object.values(state.pitch).some(v => v)) {
-            pitchToCanvas();
-        }
+    // Switch board layout based on exercise — custom boards for structured tools
+    const customLayouts = ['lean-canvas', 'elevator-pitch', 'pre-mortem', 'effectuation'];
+    if (customLayouts.includes(exercise)) {
+        switchBoardLayout(exercise);
     } else {
         switchBoardLayout('default');
+    }
+    // If coming from elevator pitch into lean canvas, carry components
+    if (exercise === 'lean-canvas' && Object.values(state.pitch).some(v => v)) {
+        pitchToCanvas();
     }
 
     // Show/hide pitch preview
@@ -1297,6 +1296,22 @@ async function streamResponse() {
         }
         fullText = fullText.replace(/\n?\[PITCH:[a-z_-]+:\s*[^\]]+\]/g, '').trim();
 
+        // Parse [RISK:category: text] tags — Pre-Mortem board
+        const riskRegex = /\[RISK:([a-z_-]+):\s*([^\]]+)\]/g;
+        for (const rm of fullText.matchAll(riskRegex)) {
+            const zone = RISK_TAG_MAP[rm[1].trim().toLowerCase()];
+            if (zone) addBoardCard(rm[2].trim(), zone, state.mode, 'Pre-Mortem');
+        }
+        fullText = fullText.replace(/\n?\[RISK:[a-z_-]+:\s*[^\]]+\]/g, '').trim();
+
+        // Parse [EFF:principle: text] tags — Effectuation board
+        const effRegex = /\[EFF:([a-z_-]+):\s*([^\]]+)\]/g;
+        for (const em of fullText.matchAll(effRegex)) {
+            const zone = EFF_TAG_MAP[em[1].trim().toLowerCase()];
+            if (zone) addBoardCard(em[2].trim(), zone, state.mode, 'Effectuation');
+        }
+        fullText = fullText.replace(/\n?\[EFF:[a-z_-]+:\s*[^\]]+\]/g, '').trim();
+
         // Parse [BOARD:open] and [BOARD:close] signals
         if (fullText.includes('[BOARD:open]')) {
             if (!state.board.visible) toggleBoard();
@@ -1864,6 +1879,29 @@ const BOARD_LAYOUTS = {
         ],
         gridClass: 'board-grid-canvas'
     },
+    'pre-mortem': {
+        zones: [
+            { id: 'risk-market', name: 'Market Risk', empty: 'Market failures', hint: 'Wrong market, bad timing, no demand', colour: 'orange' },
+            { id: 'risk-product', name: 'Product Risk', empty: 'Product failures', hint: 'Wrong solution, bad UX, doesn\'t work', colour: 'orange' },
+            { id: 'risk-team', name: 'Team Risk', empty: 'Team failures', hint: 'Wrong skills, conflict, burnout', colour: 'pink' },
+            { id: 'risk-financial', name: 'Financial Risk', empty: 'Money failures', hint: 'Ran out of cash, wrong pricing', colour: 'teal' },
+            { id: 'risk-competition', name: 'Competition Risk', empty: 'Competitive failures', hint: 'Beaten by incumbents or new entrants', colour: 'teal' },
+            { id: 'risk-timing', name: 'Timing Risk', empty: 'Timing failures', hint: 'Too early, too late, external shock', colour: 'yellow' },
+            { id: 'risk-mitigations', name: 'Mitigations', empty: 'Actions to reduce risk', hint: 'What you can do this week', colour: 'orange' }
+        ],
+        gridClass: 'board-grid-premortem'
+    },
+    'effectuation': {
+        zones: [
+            { id: 'eff-means', name: 'Bird in Hand', empty: 'What you already have', hint: 'Skills, knowledge, network', colour: 'orange' },
+            { id: 'eff-loss', name: 'Affordable Loss', empty: 'What you can risk', hint: 'Time, money, reputation', colour: 'pink' },
+            { id: 'eff-quilt', name: 'Crazy Quilt', empty: 'Who could join', hint: 'Partners, allies, co-creators', colour: 'teal' },
+            { id: 'eff-lemonade', name: 'Lemonade', empty: 'Surprises to leverage', hint: 'Turn setbacks into advantages', colour: 'yellow' },
+            { id: 'eff-pilot', name: 'Pilot in the Plane', empty: 'What you control', hint: 'Shape the future, don\'t predict it', colour: 'orange' },
+            { id: 'eff-action', name: 'First Move', empty: 'This week\'s action', hint: 'One concrete step in 48 hours', colour: 'orange' }
+        ],
+        gridClass: 'board-grid-effectuation'
+    },
     'elevator-pitch': {
         zones: [
             { id: 'pitch-customer', name: 'Target Customer', empty: 'Who is this for?', hint: 'The specific person who needs this most', colour: 'orange' },
@@ -1887,6 +1925,27 @@ const CANVAS_TAG_MAP = {
     'revenue': 'revenue', 'revenue-streams': 'revenue',
     'costs': 'costs', 'cost': 'costs', 'cost-structure': 'costs',
     'metrics': 'metrics', 'key-metrics': 'metrics'
+};
+
+// Pre-Mortem risk tag mapping
+const RISK_TAG_MAP = {
+    'market': 'risk-market',
+    'product': 'risk-product',
+    'team': 'risk-team',
+    'financial': 'risk-financial',
+    'competition': 'risk-competition',
+    'timing': 'risk-timing',
+    'mitigation': 'risk-mitigations', 'mitigations': 'risk-mitigations'
+};
+
+// Effectuation principle tag mapping
+const EFF_TAG_MAP = {
+    'means': 'eff-means', 'bird-in-hand': 'eff-means',
+    'loss': 'eff-loss', 'affordable-loss': 'eff-loss',
+    'quilt': 'eff-quilt', 'crazy-quilt': 'eff-quilt',
+    'lemonade': 'eff-lemonade',
+    'pilot': 'eff-pilot', 'pilot-in-the-plane': 'eff-pilot',
+    'action': 'eff-action', 'first-move': 'eff-action'
 };
 
 function switchBoardLayout(mode) {

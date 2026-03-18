@@ -321,7 +321,18 @@ Guide the user through failure categories one at a time. For each, ask them to i
 
 For each category, push them to be brutally honest. Then ask: "What would you do TODAY to prevent this specific failure?"
 
-After all categories, synthesise: What are the top 3 risks that keep you up at night? What's the cheapest way to de-risk each one this month?""" + FACILITATOR_OVERLAY,
+After all categories, synthesise: What are the top 3 risks that keep you up at night? What's the cheapest way to de-risk each one this month?
+
+BOARD SIGNAL TAGS — emit after each risk and mitigation so the board populates:
+[RISK:market: concise risk description]
+[RISK:product: concise risk description]
+[RISK:team: concise risk description]
+[RISK:financial: concise risk description]
+[RISK:competition: concise risk description]
+[RISK:timing: concise risk description]
+[RISK:mitigation: concise action to reduce risk]
+
+Emit tags AFTER your conversational response. Keep each under 15 words.""" + FACILITATOR_OVERLAY,
 
     "debate:devils-advocate": STUDIO_IDENTITY + """
 
@@ -646,7 +657,17 @@ Guide the user through all five principles conversationally:
 5. **Pilot-in-the-Plane** — Focus on what you can control rather than predicting what you can't.
    Ask: What aspects of the future can you directly shape? Where are you trying to predict when you should be creating?
 
-After all five principles, synthesise: Given your means (bird-in-hand), what is one thing you could start THIS WEEK with an affordable loss?""" + FACILITATOR_OVERLAY,
+After all five principles, synthesise: Given your means (bird-in-hand), what is one thing you could start THIS WEEK with an affordable loss?
+
+BOARD SIGNAL TAGS — emit after each principle is discussed so the board populates:
+[EFF:means: concise description of what they have]
+[EFF:loss: what they can afford to risk]
+[EFF:quilt: who could join or help]
+[EFF:lemonade: surprise or setback to leverage]
+[EFF:pilot: what they can control or shape]
+[EFF:action: their concrete first move]
+
+Emit tags AFTER your conversational response. Keep each under 15 words.""" + FACILITATOR_OVERLAY,
 
     # === ROUTING (no tool selected) ===
 
