@@ -82,6 +82,53 @@ body {
 .session-bar.hidden { display: none; }
 .js-state { display: none; }
 
+/* === STAGE COLOUR SYSTEM — applies everywhere when data-mode is set === */
+/* CSS custom property for current stage colour — set via JS or cascade */
+body[data-mode="reframe"]   { --stage-color: var(--orange); }
+body[data-mode="ideate"]    { --stage-color: var(--pink); }
+body[data-mode="debate"]    { --stage-color: var(--teal); }
+body[data-mode="framework"] { --stage-color: var(--yellow); }
+body[data-mode="routing"]   { --stage-color: var(--orange); }
+
+/* Logo — colour shift per stage */
+body[data-mode="reframe"]   .logo { filter: none; }
+body[data-mode="ideate"]    .logo { filter: hue-rotate(310deg) saturate(1.5); }
+body[data-mode="debate"]    .logo { filter: hue-rotate(170deg) saturate(1.8); }
+body[data-mode="framework"] .logo { filter: hue-rotate(55deg) saturate(3) brightness(1.3); }
+
+/* Session bar bottom border */
+body[data-mode] .session-bar { border-bottom-color: var(--stage-color); border-bottom-width: 2px; }
+
+/* Session label exercise name */
+body[data-mode] .session-label-exercise { color: var(--stage-color); }
+
+/* Input field focus glow */
+body[data-mode] .input-field:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--stage-color) 12%, transparent); border-color: color-mix(in srgb, var(--stage-color) 40%, transparent); }
+
+/* Send button */
+body[data-mode] .send-btn { background: var(--stage-color); }
+
+/* Report CTA button */
+body[data-mode] .report-cta-btn { color: var(--stage-color); border-color: var(--stage-color); }
+
+/* Board toggle active */
+body[data-mode] .board-toggle.active { border-color: var(--stage-color); color: var(--stage-color); }
+
+/* Help me / Challenge me hover */
+body[data-mode] .chat-action-btn:hover { border-color: var(--stage-color); color: var(--stage-color); }
+body[data-mode] .chat-action-btn.active { border-color: var(--stage-color); color: var(--stage-color); background: color-mix(in srgb, var(--stage-color) 10%, transparent); }
+
+/* Progress bar fill */
+body[data-mode] .progress-bar-fill { background: var(--stage-color); }
+
+/* Session action buttons hover */
+body[data-mode] .session-action-btn:hover { color: var(--stage-color); }
+
+/* Pitch preview border */
+body[data-mode] .pitch-preview { border-color: color-mix(in srgb, var(--stage-color) 20%, transparent); }
+body[data-mode] .pitch-slot.filled { color: var(--stage-color); border-bottom-color: var(--stage-color); }
+body[data-mode] .pitch-progress-dot.filled { background: var(--stage-color); border-color: var(--stage-color); }
+
 /* Session label — replaces stage dots */
 .session-label {
     flex: 1;

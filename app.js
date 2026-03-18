@@ -776,6 +776,7 @@ function enterStudio() {
     // Hide Wade CTA footer during session
     if (wadeCta) wadeCta.style.display = 'none';
     document.body.classList.add('in-session');
+    document.body.dataset.mode = 'routing';
     // Hide input until Pete's first message arrives
     if (inputArea) inputArea.style.display = 'none';
     moveInputToSession();
