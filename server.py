@@ -204,7 +204,23 @@ MID-EXERCISE CHECK-IN: Around the halfway point of the exercise, do a brief ener
 
 PARKING LOT REVIEW: When the user has 3 or more parked items and you are approaching the converge phase or end of the exercise, briefly reference the parking lot: "You've parked a few ideas. Before we close — does anything in the parking lot change what we've landed on?"
 
-CELEBRATION: When the user has a genuine breakthrough — a real shift in thinking, not just a good answer — append [CELEBRATE] on its own line at the end of your response. Use this sparingly — maximum twice per exercise."""
+CELEBRATION: When the user has a genuine breakthrough — a real shift in thinking, not just a good answer — append [CELEBRATE] on its own line at the end of your response. Use this sparingly — maximum twice per exercise.
+
+RE-ROUTING — CRITICAL: If at any point during the exercise you notice the user is in the wrong tool, suggest switching. Signs:
+- In Crazy 8s but they keep returning to the same idea → suggest How Might We to reframe first
+- In Five Whys but they already clearly understand the root cause → suggest skipping to an Ideate tool
+- In Lean Canvas but stuck on the Problem block → suggest pausing to do Five Whys on that block
+- In any tool but the user seems lost or disengaged → ask "Are we digging into the right thing? We can switch tools if this isn't landing."
+- User finishes a quick tool and has time → offer the deep version of the same stage
+
+When suggesting a re-route, frame it naturally: "I'm noticing [observation]. Want to pause here and try [tool] instead? We can always come back."
+Emit [SUGGEST: tool-key] so the button appears.
+
+DATA CARRY-FORWARD: When the user transitions between tools, previous work is available in your system context. Always offer to bring relevant data forward:
+- "I can see you identified [X] in your Five Whys session. Want me to use that as the starting problem here?"
+- "Your Elevator Pitch had [customer] as the target. Should I carry that into the canvas?"
+- "The Pre-Mortem flagged [risk] as your biggest concern. Want to start the Devil's Advocate there?"
+Never auto-fill without asking. Always give the user the choice."""
 
 SYSTEM_PROMPTS = {
 
@@ -815,14 +831,23 @@ def chat():
 
     project_context = data.get('project_context', [])
     if project_context:
-        context_sections = "\n\n".join([
-            f"**{ctx['stage']} — {ctx['exercise']}**\n{ctx['report']}"
-            for ctx in project_context
-        ])
+        context_parts = []
+        for ctx in project_context:
+            part = f"**{ctx.get('stage', '')} — {ctx.get('exercise', '')}**"
+            if ctx.get('report'):
+                part += f"\nReport:\n{ctx['report']}"
+            if ctx.get('conversation'):
+                # Include last 1000 chars of conversation for context
+                convo = ctx['conversation'][-1000:] if len(ctx.get('conversation', '')) > 1000 else ctx.get('conversation', '')
+                part += f"\nConversation excerpt:\n{convo}"
+            context_parts.append(part)
+        context_sections = "\n\n".join(context_parts)
         system_prompt += (
             "\n\n---\n\n## Previous Session Work\n\n"
-            "This participant has just completed the following thinking exercises and is continuing their session. "
-            "When you open this new exercise, explicitly bridge from their previous work: "
+            "This participant has completed the following exercises in this session. Their full conversation and outputs are below. "
+            "When you open this new exercise, FIRST offer to carry forward relevant data: "
+            "'I can see from your [previous tool] that [specific output]. Want me to use that here?' "
+            "Then explicitly bridge from their previous work: "
             "name the specific insights or discoveries they made, reframe them in terms of this new exercise, "
             "and show how this next stage builds directly on what they uncovered. "
             "Do NOT ask them to describe their challenge from scratch — you already know it.\n\n"
