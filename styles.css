@@ -1398,12 +1398,16 @@ body.board-open > .input-area {
 
 /* === PITCH PREVIEW CARD === */
 .pitch-preview {
-    background: rgba(241,90,34,0.04);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg);
     border: 1px solid rgba(241,90,34,0.15);
-    border-radius: 10px;
+    border-radius: 0 0 10px 10px;
     padding: 1rem 1.25rem;
-    margin-bottom: 1rem;
+    margin: 0 0 1rem;
     max-width: 800px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 .pitch-preview.hidden { display: none; }
 .pitch-preview-header {
