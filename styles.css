@@ -3450,10 +3450,8 @@ body.board-maximised > .input-area {
     background: var(--bg);
 }
 /* Zone colour accents — left border per section */
-.board-zone[data-colour="orange"] { border-left: 3px solid var(--orange); }
-.board-zone[data-colour="pink"]   { border-left: 3px solid var(--pink); }
-.board-zone[data-colour="teal"]   { border-left: 3px solid var(--teal); }
-.board-zone[data-colour="yellow"] { border-left: 3px solid var(--yellow); }
+/* Zone borders are neutral — stage colour on board header/border only */
+.board-zone { border-left: 3px solid rgba(255,255,255,0.15); }
 
 .board-grid-canvas .zone-name {
     font-size: 0.8rem;
@@ -3463,10 +3461,8 @@ body.board-maximised > .input-area {
     letter-spacing: 0.04em;
 }
 /* Zone name colours match their section */
-.board-zone[data-colour="orange"] .zone-name { color: var(--orange); }
-.board-zone[data-colour="pink"] .zone-name   { color: var(--pink); }
-.board-zone[data-colour="teal"] .zone-name   { color: var(--teal); }
-.board-zone[data-colour="yellow"] .zone-name { color: var(--yellow); }
+/* Zone names are neutral — stage colour is on board header/border only */
+.board-zone .zone-name { color: rgba(255,255,255,0.5); }
 .board-grid-canvas .board-card-text {
     font-size: 0.85rem;
     line-height: 1.45;
@@ -3487,10 +3483,8 @@ body.board-maximised > .input-area {
 /* Hide hint when zone has cards — JS handles this via zone-hint class toggle */
 
 /* Card colours match zone colours */
-.board-zone[data-colour="orange"] .board-card { border-left-color: var(--orange); }
-.board-zone[data-colour="pink"] .board-card   { border-left-color: var(--pink); }
-.board-zone[data-colour="teal"] .board-card   { border-left-color: var(--teal); }
-.board-zone[data-colour="yellow"] .board-card { border-left-color: var(--yellow); }
+/* Card borders use stage colour via --stage-color (set on body) */
+.board-card { border-left-color: var(--stage-color, rgba(255,255,255,0.2)); }
 
 /* Inline edit textarea */
 .board-card-edit {
