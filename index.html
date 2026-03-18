@@ -14,9 +14,19 @@
 
     <header class="header">
         <img class="logo" src="logo.png" alt="Wade Institute">
-        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle light/dark mode">
-            <span class="theme-icon">☀</span>
-        </button>
+        <div class="header-controls">
+            <div class="text-size-control" id="textSizeControl">
+                <button class="text-size-btn" id="textSizeToggle" title="Adjust text size">Aa</button>
+                <div class="text-size-picker hidden" id="textSizePicker">
+                    <button class="text-size-option" data-size="small">A<span class="text-size-label">Small</span></button>
+                    <button class="text-size-option active" data-size="medium">A<span class="text-size-label">Medium</span></button>
+                    <button class="text-size-option" data-size="large">A<span class="text-size-label">Large</span></button>
+                </div>
+            </div>
+            <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle light/dark mode">
+                <span class="theme-icon">☀</span>
+            </button>
+        </div>
     </header>
 
     <!-- Active session bar (hidden until an exercise is selected) -->
@@ -163,15 +173,6 @@
     </div>
 
 
-    <!-- Text size control — floating bottom-right -->
-    <div class="text-size-control" id="textSizeControl">
-        <button class="text-size-btn" id="textSizeToggle" title="Adjust text size">Aa</button>
-        <div class="text-size-picker hidden" id="textSizePicker">
-            <button class="text-size-option" data-size="small">A<span class="text-size-label">Small</span></button>
-            <button class="text-size-option active" data-size="medium">A<span class="text-size-label">Medium</span></button>
-            <button class="text-size-option" data-size="large">A<span class="text-size-label">Large</span></button>
-        </div>
-    </div>
 
 </div><!-- /app-shell -->
 

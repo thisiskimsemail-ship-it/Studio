@@ -2218,11 +2218,14 @@ html[data-theme="light"] .option-chip:hover {
     .welcome-cards.cards-collapsed .cards-chevron { transform: rotate(-90deg); }
 }
 
-/* === TEXT SIZE CONTROL — floating bottom-right === */
+/* === TEXT SIZE CONTROL — in header === */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 .text-size-control {
-    position: fixed;
-    bottom: 5.5rem;
-    right: 1.25rem;
+    position: relative;
     z-index: 300;
     display: flex;
     flex-direction: column;
@@ -2253,6 +2256,10 @@ html[data-theme="light"] .option-chip:hover {
 }
 
 .text-size-picker {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.35rem;
     display: flex;
     flex-direction: column;
     gap: 0.2rem;

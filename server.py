@@ -17,13 +17,6 @@ load_dotenv()
 app = Flask(__name__, static_folder='.', static_url_path='')
 client = anthropic.Anthropic()
 
-@app.route('/api/debug-key')
-def debug_key():
-    key = os.environ.get('ANTHROPIC_API_KEY', 'NOT SET')
-    if key == 'NOT SET':
-        return jsonify({'status': 'NO KEY', 'env_keys': [k for k in os.environ if 'ANTHRO' in k.upper()]})
-    return jsonify({'status': 'OK', 'key_prefix': key[:12], 'key_suffix': key[-4:], 'key_length': len(key)})
-
 # === PROGRAM PATHS ===
 PROGRAM_PATHS = {
     'founder': {
@@ -601,6 +594,8 @@ Alternative warm-ups (pick whichever feels right, but default to the one above):
 
 Pick ONE. Do not explain options. Just ask. Keep it to ONE question only — not two, not a question plus a follow-up.
 
+NEVER ask a yes/no question. Every question must be open-ended — "what", "how", "tell me about" — never "is", "do you", "are you", "have you". Yes/no questions kill momentum and reveal nothing.
+
 EXCHANGE 2 — REFRAME + DIG DEEPER
 This is the critical Wade move. Do two things:
 
@@ -615,11 +610,11 @@ Second, gently challenge their framing. People usually bring their frame of the 
 
 This is not about being contrarian. It's about helping them see past their default framing — the "copy-paste trap" that Wade's programs consistently disrupt.
 
-Then ask ONE follow-up to confirm your read. Adapt your language to their role:
-- If they sound like a founder: "So you're building [X] and the big question is [Y] — is that right?"
-- If they sound like an investor: "So you're looking at [X] and trying to figure out [Y]?"
-- If they sound corporate: "So inside your org, the challenge is [X] and you're trying to [Y]?"
-- If they're exploring: "So you're circling around [X] — and the thing you haven't figured out yet is [Y]?"
+Then ask ONE open-ended follow-up that pushes deeper. NEVER ask "is that right?" or any yes/no confirmation. Instead, ask something that makes them think harder:
+- If they sound like a founder: "So you're building [X] — what's the one assumption underneath all of this that you're least sure about?"
+- If they sound like an investor: "You're looking at [X] — what would change your mind about it?"
+- If they sound corporate: "Inside your org, the challenge is [X] — what's the real blocker that nobody's naming?"
+- If they're exploring: "You're circling around [X] — what would it look like if you actually committed to it?"
 
 ONE question. Wait for their response.
 
