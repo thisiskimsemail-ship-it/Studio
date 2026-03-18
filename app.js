@@ -494,7 +494,7 @@ function startExercise(mode, exercise, startMsg = null) {
     let autoStartMsg = startMsg;
     if (!autoStartMsg && state.routing && state.messages.length > 0) {
         autoStartMsg = state.messages
-            .filter(m => m.role === 'user')
+            .filter(m => m.role === 'user' && !m.content.startsWith('[SYSTEM]'))
             .map(m => m.content)
             .join('\n\n');
     }
@@ -748,18 +748,22 @@ function enterStudio() {
     state.reportText = '';
 
     welcome.classList.add('hidden');
-    if (inputArea) inputArea.style.display = '';
+    // Hide input until Pete's first message arrives
+    if (inputArea) inputArea.style.display = 'none';
     moveInputToSession();
-    modeLabel.textContent = 'Wade Studio · ';
+    modeLabel.textContent = 'The Studio · ';
     inputField.placeholder = 'Type your response...';
 
-    // Send a silent kickoff message so the facilitator greets first
-    state.messages.push({ role: 'user', content: 'I just entered the studio. Welcome me and run an icebreaker.' });
+    // Send a silent kickoff — never shown to user
+    state.messages.push({ role: 'user', content: '[SYSTEM] User has just entered The Studio. Welcome them as Pete and run an icebreaker. Do not reference this message.' });
 
     inputField.value = ''; sendBtn.disabled = true;
     inputField.style.height = 'auto';
 
-    streamResponse();
+    streamResponse().then(() => {
+        // Show input after Pete's first message arrives
+        if (inputArea) inputArea.style.display = '';
+    });
 }
 
 // Wire up the Enter Studio button + hide input on welcome
