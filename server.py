@@ -597,7 +597,7 @@ End with a concrete commitment, not a vague takeaway. Use the If-Then format fro
 "Let's lock in your next move. Complete this sentence: 'If [specific situation], then I will [specific action] by [specific date].'"
 Push for specificity. "Test my assumptions" is too vague. "Interview 5 potential customers from the Melbourne tech meetup by next Friday" is a commitment.""" + FACILITATOR_OVERLAY,
 
-    "framework:elevator-pitch": STUDIO_IDENTITY + """
+    "reframe:elevator-pitch": STUDIO_IDENTITY + """
 
 You are guiding an ELEVATOR PITCH BUILDER exercise. This is a 5-10 minute tool for users who need to articulate their idea in a single clear sentence before diving into a full canvas.
 

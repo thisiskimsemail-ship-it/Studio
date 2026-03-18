@@ -153,7 +153,7 @@ const EXERCISE_MODE = {
     'devils-advocate':  'debate',
     'rapid-experiment': 'debate',
     'lean-canvas':      'framework',
-    'elevator-pitch':   'framework',
+    'elevator-pitch':   'reframe',
     'effectuation':     'framework',
     'analogical':       'framework'
 };
@@ -2469,8 +2469,8 @@ function renderMarkdown(text) {
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
-    // Links
-    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    // Links (both absolute and relative URLs)
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
 
     // Inline code
     html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
@@ -2729,5 +2729,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mode = EXERCISE_MODE[toolParam];
         history.replaceState({}, '', '/');
         startExercise(mode, toolParam);
+        // Belt-and-suspenders: ensure input bar is visible after direct tool launch
+        if (inputArea) inputArea.style.display = '';
     }
 });
