@@ -712,17 +712,8 @@ def chat():
             "Prioritise intellectual honesty over comfort. Still warm, never harsh."
         )
 
-    # Inject live Wade programs/events so Claude can reference them in conversation
-    live_programs = fetch_wade_programs()
-    if live_programs:
-        system_prompt += (
-            "\n\n---\nLIVE WADE PROGRAMS & EVENTS (fetched now from wadeinstitute.org.au):\n"
-            + live_programs
-            + "\n\nWhen it is genuinely relevant to what the person is working on — "
-            "at the END of a response, after your main facilitation content — mention 1 specific "
-            "Wade program or upcoming event with its full markdown link. Keep it to one sentence. "
-            "Only include it when it's a natural fit; skip it if nothing is relevant."
-        )
+    # Wade programs are included in the REPORT only — not during conversation
+    # Pete should focus on facilitation, not selling programs mid-session
 
     # Add end-of-exercise wrap signal for non-routing modes
     if mode != 'routing':
