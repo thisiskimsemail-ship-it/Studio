@@ -27,7 +27,7 @@
     --mono: 'GT Walsheim', sans-serif;
 }
 
-html { font-size: 16px; }
+html { font-size: 16px; overflow-x: hidden; }
 
 body {
     background: var(--bg);
@@ -35,6 +35,7 @@ body {
     font-family: var(--font);
     min-height: 100vh;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* App shell holds the full-height chat experience */
@@ -830,6 +831,7 @@ html[data-theme="light"] .parking-lot-toggle:hover { border-color: rgba(30,25,79
 .chat-area {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 1.5rem;
     padding-bottom: 6rem; /* clearance for fixed prompt bar during sessions */
     position: relative;
@@ -986,18 +988,21 @@ body.in-session #wadeCta { display: none !important; }
 
 /* Welcome hero — full bleed image above text */
 .welcome-hero {
-    width: 100vw;
+    width: calc(100% + 4rem);
+    margin-left: -2rem;
+    margin-right: -2rem;
+    margin-top: -1.5rem;
+    margin-bottom: 1.5rem;
     height: 30vh;
     min-height: 180px;
     max-height: 300px;
-    margin: -3rem -1.5rem 1.5rem;
     background: url('banner.jpg') center 40% / cover no-repeat;
     position: relative;
 }
 /* No gradient overlay on hero image */
 
 @media (max-width: 640px) {
-    .welcome-hero { height: 25vh; min-height: 140px; max-height: 220px; margin: -1.5rem -1rem 1rem; }
+    .welcome-hero { width: calc(100% + 1.5rem); margin-left: -0.75rem; margin-right: -0.75rem; margin-top: -0.75rem; margin-bottom: 1rem; height: 25vh; min-height: 140px; max-height: 220px; }
 }
 
 .welcome-title {
