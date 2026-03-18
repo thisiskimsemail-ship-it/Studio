@@ -102,13 +102,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // === SCROLL-REVEAL FOOTER ===
+// Only reveal after user has scrolled — never on initial page load
 document.addEventListener('DOMContentLoaded', () => {
     const footer = document.getElementById('wadeCta');
     if (!footer) return;
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(e => { if (e.isIntersecting) footer.classList.add('visible'); });
-    }, { threshold: 0.15 });
-    observer.observe(footer);
+    let userHasScrolled = false;
+    const onFirstScroll = () => {
+        userHasScrolled = true;
+        window.removeEventListener('scroll', onFirstScroll);
+        // Now start observing
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) footer.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        observer.observe(footer);
+    };
+    window.addEventListener('scroll', onFirstScroll, { passive: true });
 });
 
 // === LOGO SWAP PER STAGE ===
