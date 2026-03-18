@@ -503,6 +503,25 @@ function startExercise(mode, exercise, startMsg = null) {
             .join('\n\n');
     }
 
+    // Carry previous conversation into projectContext so Pete has full history
+    if (state.messages.length > 0 && state.mode) {
+        const prevExercise = EXERCISE_LABELS[state.exercise] || state.exercise || 'session';
+        const prevStage = MODE_LABELS[state.mode] || state.mode || '';
+        // Summarise previous messages into context
+        const prevMessages = state.messages
+            .filter(m => !m.content.startsWith('[SYSTEM]'))
+            .map(m => `${m.role === 'user' ? 'User' : 'Pete'}: ${m.content}`)
+            .join('\n');
+        if (prevMessages) {
+            state.projectContext.push({
+                stage: prevStage,
+                exercise: prevExercise,
+                conversation: prevMessages,
+                report: state.reportText || ''
+            });
+        }
+    }
+
     state.mode = mode;
     state.exercise = exercise;
     state.messages = [];

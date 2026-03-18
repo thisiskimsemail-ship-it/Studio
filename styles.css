@@ -2811,6 +2811,22 @@ html[data-theme="light"] .chat-action-btn:hover {
 }
 .theme-toggle:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
 
+.header-save-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    color: var(--text-dim);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.header-save-btn:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+body.in-session .header-save-btn { display: flex; }
+
 /* === LIGHT MODE === */
 html[data-theme="light"] {
     --bg: #F6F5F5;
