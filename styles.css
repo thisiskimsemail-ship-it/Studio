@@ -55,9 +55,12 @@ body {
 }
 
 .logo {
-    height: 90px;
+    height: 72px;
     width: auto;
     transition: filter 0.6s ease;
+}
+@media (max-width: 640px) {
+    .logo { height: 48px; }
 }
 
 /* Logo shifts to exact brand colours per active stage.
@@ -706,6 +709,11 @@ html[data-theme="light"] .parking-lot-toggle:hover { border-color: rgba(30,25,79
 .chat-area:has(.welcome.hidden)::after {
     opacity: 0.25;
 }
+/* Hide banner borders on mobile — no room */
+@media (max-width: 900px) {
+    .chat-area::before,
+    .chat-area::after { display: none; }
+}
 
 /* Ensure chat content sits above the background */
 .chat-area > * {
@@ -778,10 +786,10 @@ html[data-theme="light"] .parking-lot-toggle:hover { border-color: rgba(30,25,79
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    min-height: 60vh;
+    justify-content: flex-start;
+    min-height: auto;
     text-align: center;
-    padding: 3rem 2rem 2.5rem;
+    padding: 1.5rem 2rem 2.5rem;
     position: relative;
     overflow: hidden;
 }
@@ -802,14 +810,17 @@ html[data-theme="light"] .parking-lot-toggle:hover { border-color: rgba(30,25,79
 .welcome.hidden { display: none; }
 
 .welcome-tagline {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-dim);
-    max-width: 580px;
-    line-height: 1.65;
-    margin-bottom: 0.75rem;
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 0.6rem;
+}
+@media (min-width: 641px) {
+    .welcome-tagline { font-size: 1.05rem; }
 }
 
-.welcome-tagline:last-of-type { margin-bottom: 2rem; }
+.welcome-tagline:last-of-type { margin-bottom: 2.5rem; }
 
 .welcome-tagline-bold {
     font-weight: 600;
@@ -823,57 +834,72 @@ html[data-theme="light"] .parking-lot-toggle:hover { border-color: rgba(30,25,79
     background: var(--orange);
     color: #fff;
     border: none;
-    padding: 0.85rem 2.2rem;
+    padding: 0.9rem 2.5rem;
     font-size: 1.05rem;
     font-weight: 600;
     font-family: var(--font);
-    border-radius: 8px;
+    border-radius: 999px;
     cursor: pointer;
-    letter-spacing: 0.01em;
-    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    letter-spacing: 0.02em;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
     margin-bottom: 1.5rem;
 }
 
 .enter-studio-btn:hover {
     background: #d94f1a;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(241, 90, 34, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(241, 90, 34, 0.35);
 }
 
 .enter-studio-btn:active {
     transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(241, 90, 34, 0.2);
 }
 
 /* Welcome hero — full bleed image above text */
 .welcome-hero {
     width: 100vw;
-    height: 50vh;
-    margin: -1.5rem -1.5rem 2rem;
-    background: url('banner.jpg') center center / cover no-repeat;
+    height: 45vh;
+    min-height: 280px;
+    max-height: 420px;
+    margin: -3rem -1.5rem 2.5rem;
+    background: url('banner.jpg') center 40% / cover no-repeat;
+    position: relative;
+}
+/* Subtle gradient fade into background at bottom edge */
+.welcome-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(to bottom, transparent, var(--bg));
+    pointer-events: none;
 }
 
 @media (max-width: 640px) {
-    .welcome-hero { height: 35vh; margin-bottom: 1.5rem; }
-}
-
-@media (max-width: 640px) {
-    .welcome-hero { padding: 2.5rem 1rem 1.5rem; }
+    .welcome-hero { height: 32vh; min-height: 200px; max-height: 300px; margin: -1.5rem -1rem 1.5rem; }
 }
 
 .welcome-title {
-    font-size: 3.25rem;
+    font-size: 2.75rem;
     font-weight: 700;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
     color: var(--text);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     line-height: 1.1;
+}
+@media (min-width: 641px) {
+    .welcome-title { font-size: 3.5rem; }
 }
 
 .welcome-sub {
-    font-size: 1.125rem;
+    font-size: 1.05rem;
     color: var(--orange);
     font-weight: 500;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.01em;
 }
 
 .welcome-intro {
@@ -1182,12 +1208,15 @@ html[data-theme="light"] .parking-lot-toggle:hover { border-color: rgba(30,25,79
 }
 
 .msg {
-    padding: 0.8rem 1rem;
-    border-radius: 8px;
-    font-size: 1rem;
-    line-height: 1.65;
-    max-width: 85%;
-    animation: fadeIn 0.2s ease;
+    padding: 0.85rem 1.1rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    max-width: 82%;
+    animation: fadeIn 0.25s ease;
+}
+@media (max-width: 640px) {
+    .msg { max-width: 92%; font-size: 0.9rem; padding: 0.75rem 0.9rem; }
 }
 
 @keyframes fadeIn {
@@ -1367,18 +1396,21 @@ body > .input-area {
 .input-field {
     flex: 1;
     background: var(--bg-light);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 6px;
-    padding: 0.65rem 0.9rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
     color: var(--text);
     font-family: var(--font);
-    font-size: 1.125rem;
-    line-height: 1.4;
+    font-size: 1rem;
+    line-height: 1.45;
     resize: none;
     outline: none;
-    min-height: 4.5rem;
+    min-height: 3.5rem;
     max-height: 120px;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+@media (max-width: 640px) {
+    .input-field { font-size: 0.95rem; min-height: 3rem; padding: 0.6rem 0.85rem; }
 }
 
 .input-field:focus {
@@ -2150,21 +2182,20 @@ html[data-theme="light"] .option-chip:hover {
 /* === RESPONSIVE === */
 @media (max-width: 640px) {
     /* Header */
-    .header { padding: 0.6rem 1rem; }
-    .logo { height: 55px; }
+    .header { padding: 0.5rem 0.75rem; }
 
     /* Chat + input */
-    .chat-area { padding: 0.75rem 1rem; }
-    .input-area { padding: 0.5rem 1rem 0.6rem; }
-    .input-form { flex-wrap: wrap; }
-    .input-field { font-size: 1rem; flex-basis: 100%; }
-    .input-btns { flex-direction: row; margin-left: auto; }
+    .chat-area { padding: 0.75rem 0.75rem; padding-bottom: 5.5rem; }
+    .input-area { padding: 0.5rem 0.75rem 0.5rem; }
+    .input-form { flex-wrap: nowrap; gap: 0.35rem; }
+    .input-btns { flex-direction: row; gap: 0.3rem; }
     .input-hint-copy { display: none; }
+    .input-disclaimer { font-size: 0.55rem; }
 
     /* Welcome screen */
-    .welcome { padding: 1.5rem 1rem 1.5rem; min-height: auto; }
-    .welcome-title { font-size: 1.875rem; }
-    .welcome-sub { font-size: 1rem; }
+    .welcome { padding: 0 0.75rem 1.5rem; min-height: auto; }
+    .welcome-title { font-size: 2rem; }
+    .welcome-sub { font-size: 0.95rem; margin-bottom: 1rem; }
     .welcome-intro { margin-bottom: 0.75rem; }
 
     .welcome-guide {
@@ -2744,6 +2775,45 @@ html[data-theme="light"] .tool-entry-time { background: rgba(30,25,79,0.05); }
     gap: 0.5rem;
     flex: 1;
     min-height: 0;
+}
+
+/* Default board: single column */
+.board-grid-default {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Lean Canvas board: 3x3 grid matching the standard canvas layout */
+.board-grid-canvas {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 0.4rem;
+    overflow-y: auto;
+}
+/* Canvas layout: Problem/Solution/UVP top row, Unfair/Segments/Channels middle, Revenue/Costs/Metrics bottom */
+.board-grid-canvas .board-zone[data-zone="problem"]  { grid-column: 1; grid-row: 1; }
+.board-grid-canvas .board-zone[data-zone="solution"]  { grid-column: 2; grid-row: 1; }
+.board-grid-canvas .board-zone[data-zone="uvp"]       { grid-column: 3; grid-row: 1; }
+.board-grid-canvas .board-zone[data-zone="unfair"]    { grid-column: 1; grid-row: 2; }
+.board-grid-canvas .board-zone[data-zone="segments"]  { grid-column: 2; grid-row: 2; }
+.board-grid-canvas .board-zone[data-zone="channels"]  { grid-column: 3; grid-row: 2; }
+.board-grid-canvas .board-zone[data-zone="revenue"]   { grid-column: 1; grid-row: 3; }
+.board-grid-canvas .board-zone[data-zone="costs"]     { grid-column: 2; grid-row: 3; }
+.board-grid-canvas .board-zone[data-zone="metrics"]   { grid-column: 3; grid-row: 3; }
+
+.board-grid-canvas .board-zone {
+    min-height: 80px;
+}
+.board-grid-canvas .zone-name {
+    font-size: 0.6rem;
+}
+.board-grid-canvas .board-card-text {
+    font-size: 0.75rem;
+}
+.board-grid-canvas .board-card {
+    padding: 0.35rem 0.45rem;
 }
 
 .board-zone {

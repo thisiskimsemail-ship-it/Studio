@@ -256,7 +256,8 @@ const state = {
     parkingLot: [],       // { text, fromExercise, timestamp }
     currentPhase: null,   // 'diverge' | 'converge'
     sessionStartTime: null, // Date.now() when exercise starts
-    board: { cards: [], visible: false }  // workshop board state
+    board: { cards: [], visible: false },  // workshop board state
+    boardMode: 'default'  // 'default' | 'lean-canvas'
 };
 
 // === DOM ===
@@ -545,6 +546,15 @@ function startExercise(mode, exercise, startMsg = null) {
     $('#reportShareBtn').classList.add('hidden');
     $('#reportLinkedInBtn')?.classList.add('hidden');
     routingBack.classList.add('hidden');
+
+    // Switch board layout based on exercise
+    if (exercise === 'lean-canvas') {
+        switchBoardLayout('lean-canvas');
+        // Auto-open the board for canvas exercises
+        if (!state.board.visible) toggleBoard();
+    } else {
+        switchBoardLayout('default');
+    }
 
     // Show report CTA immediately but disabled — enables after first exchange
     reportCta.classList.remove('hidden');
@@ -1234,6 +1244,22 @@ async function streamResponse() {
             }
         });
 
+        // Parse [CANVAS:block: text] tags — Lean Canvas board cards
+        const canvasRegex = /\[CANVAS:([a-z_-]+):\s*([^\]]+)\]/g;
+        const canvasMatches = fullText.matchAll(canvasRegex);
+        for (const cm of canvasMatches) {
+            const blockKey = cm[1].trim().toLowerCase();
+            const blockText = cm[2].trim();
+            const zone = CANVAS_TAG_MAP[blockKey];
+            if (zone) {
+                addBoardCard(blockText, zone, state.mode, EXERCISE_LABELS[state.exercise] || 'Lean Canvas');
+                // Auto-open board if not already visible
+                if (!state.board.visible) toggleBoard();
+            }
+        }
+        fullText = fullText.replace(/\n?\[CANVAS:[a-z_-]+:\s*[^\]]+\]/g, '').trim();
+        if (agentDiv) agentDiv.innerHTML = renderMarkdown(fullText);
+
         // Parse [PHASE: diverge|converge] tags — workshop phase indicator
         const phaseMatch = fullText.match(/\[PHASE:\s*(diverge|converge)\]/);
         if (phaseMatch) {
@@ -1681,6 +1707,72 @@ function updateProgressIndicator() {
 
 // === WORKSHOP BOARD ===
 
+const BOARD_LAYOUTS = {
+    'default': {
+        zones: [
+            { id: 'insights', name: 'Key Insights', empty: 'No insights yet — keep digging' },
+            { id: 'ideas', name: 'Ideas', empty: 'Ideas will land here' },
+            { id: 'parking', name: 'Parking Lot', empty: 'Park tangential ideas here' },
+            { id: 'actions', name: 'Actions', empty: 'Concrete next steps go here' }
+        ],
+        gridClass: 'board-grid-default'
+    },
+    'lean-canvas': {
+        zones: [
+            { id: 'problem', name: 'Problem', empty: 'Top 1-3 problems' },
+            { id: 'solution', name: 'Solution', empty: 'Top features' },
+            { id: 'uvp', name: 'Unique Value Prop', empty: 'Single clear message' },
+            { id: 'unfair', name: 'Unfair Advantage', empty: 'Can\'t be copied' },
+            { id: 'segments', name: 'Customer Segments', empty: 'Target customers' },
+            { id: 'channels', name: 'Channels', empty: 'Path to customers' },
+            { id: 'revenue', name: 'Revenue Streams', empty: 'How you make money' },
+            { id: 'costs', name: 'Cost Structure', empty: 'Key costs' },
+            { id: 'metrics', name: 'Key Metrics', empty: 'Numbers that matter' }
+        ],
+        gridClass: 'board-grid-canvas'
+    }
+};
+
+// Canvas block ID mapping from signal tags
+const CANVAS_TAG_MAP = {
+    'problem': 'problem', 'problems': 'problem',
+    'solution': 'solution', 'solutions': 'solution',
+    'uvp': 'uvp', 'value-prop': 'uvp', 'value_prop': 'uvp',
+    'unfair': 'unfair', 'unfair-advantage': 'unfair', 'advantage': 'unfair',
+    'segments': 'segments', 'customers': 'segments', 'customer-segments': 'segments',
+    'channels': 'channels', 'channel': 'channels',
+    'revenue': 'revenue', 'revenue-streams': 'revenue',
+    'costs': 'costs', 'cost': 'costs', 'cost-structure': 'costs',
+    'metrics': 'metrics', 'key-metrics': 'metrics'
+};
+
+function switchBoardLayout(mode) {
+    const layout = BOARD_LAYOUTS[mode] || BOARD_LAYOUTS['default'];
+    state.boardMode = mode;
+    const zonesContainer = document.getElementById('boardZones');
+    if (!zonesContainer) return;
+
+    // Rebuild zone HTML
+    zonesContainer.className = 'board-zones ' + layout.gridClass;
+    zonesContainer.innerHTML = layout.zones.map(z => `
+        <div class="board-zone" data-zone="${z.id}">
+            <div class="zone-header"><span class="zone-name">${z.name}</span><span class="zone-count" data-zone="${z.id}">0</span></div>
+            <div class="zone-cards" data-zone="${z.id}"></div>
+            <div class="zone-empty">${z.empty}</div>
+        </div>
+    `).join('');
+
+    // Re-attach drag handlers
+    initBoardDragDrop();
+
+    // Re-render any existing cards that match new zones
+    state.board.cards.forEach(card => {
+        const zoneEl = document.querySelector(`.zone-cards[data-zone="${card.zone}"]`);
+        if (zoneEl) renderBoardCard(card);
+    });
+    updateBoardCounts();
+}
+
 function addBoardCard(text, zone, stage, source) {
     const card = {
         id: 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
@@ -1759,7 +1851,8 @@ function renderBoard() {
 }
 
 function updateBoardCounts() {
-    const zones = ['insights', 'ideas', 'parking', 'actions'];
+    const layout = BOARD_LAYOUTS[state.boardMode] || BOARD_LAYOUTS['default'];
+    const zones = layout.zones.map(z => z.id);
     let total = 0;
     zones.forEach(zone => {
         const count = state.board.cards.filter(c => c.zone === zone).length;
@@ -1792,29 +1885,20 @@ function toggleBoard() {
     }
 }
 
-// Board drag-and-drop zone handlers
-document.addEventListener('DOMContentLoaded', () => {
-    // Board toggle
-    const boardToggleBtn = document.getElementById('boardToggle');
-    if (boardToggleBtn) boardToggleBtn.addEventListener('click', toggleBoard);
-
-    // Drop zones
+// Board drag-and-drop zone handlers — extracted so switchBoardLayout can re-attach
+function initBoardDragDrop() {
     document.querySelectorAll('.zone-cards').forEach(zoneEl => {
         const zone = zoneEl.dataset.zone;
-
         zoneEl.addEventListener('dragover', (e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
             zoneEl.closest('.board-zone')?.classList.add('drag-over');
         });
-
         zoneEl.addEventListener('dragleave', (e) => {
-            // Only remove if actually leaving the zone
             if (!zoneEl.contains(e.relatedTarget)) {
                 zoneEl.closest('.board-zone')?.classList.remove('drag-over');
             }
         });
-
         zoneEl.addEventListener('drop', (e) => {
             e.preventDefault();
             zoneEl.closest('.board-zone')?.classList.remove('drag-over');
@@ -1822,8 +1906,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cardId) moveBoardCard(cardId, zone);
         });
     });
-
-    // Also allow dropping on the zone itself (not just zone-cards)
     document.querySelectorAll('.board-zone').forEach(zoneDiv => {
         const zone = zoneDiv.dataset.zone;
         zoneDiv.addEventListener('dragover', (e) => {
@@ -1843,6 +1925,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cardId) moveBoardCard(cardId, zone);
         });
     });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Board toggle
+    const boardToggleBtn = document.getElementById('boardToggle');
+    if (boardToggleBtn) boardToggleBtn.addEventListener('click', toggleBoard);
+
+    // Init drag-drop on default zones
+    initBoardDragDrop();
 
     // Add card button
     const addCardBtn = document.getElementById('boardAddCard');
@@ -1850,16 +1941,13 @@ document.addEventListener('DOMContentLoaded', () => {
         addCardBtn.addEventListener('click', () => {
             const existing = document.querySelector('.board-add-inline');
             if (existing) { existing.querySelector('input')?.focus(); return; }
+            const layout = BOARD_LAYOUTS[state.boardMode] || BOARD_LAYOUTS['default'];
+            const options = layout.zones.map(z => `<option value="${z.id}">${z.name}</option>`).join('');
             const row = document.createElement('div');
             row.className = 'board-add-inline';
             row.innerHTML = `
                 <input type="text" placeholder="Type your card...">
-                <select>
-                    <option value="insights">Insights</option>
-                    <option value="ideas">Ideas</option>
-                    <option value="parking">Parking Lot</option>
-                    <option value="actions">Actions</option>
-                </select>
+                <select>${options}</select>
                 <button>Add</button>
             `;
             addCardBtn.parentElement.after(row);
