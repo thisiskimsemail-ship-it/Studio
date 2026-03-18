@@ -491,7 +491,7 @@ Your FIRST message in this exercise MUST include ALL of the following. Do not sk
 2. A quick tour of the toolbar. Use this EXACT text:
 
 "Before we start, a quick tour of your toolkit:
-- **Grid icon** — your canvas board. I'll fill it in as we talk, but you can open it, edit cards, or add your own any time.
+- **Grid icon** — your canvas board. I'll fill it in as we talk, but you can open it any time. Double-click any card to edit it directly, or drag cards between blocks.
 - **Save icon** — save your session and get a link to come back later.
 - **Canvas icon** — download your completed canvas as a standalone page.
 - **Report icon** — generate a full workshop report whenever you're ready."
