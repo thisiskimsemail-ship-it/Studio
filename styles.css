@@ -675,6 +675,42 @@ html[data-theme="light"] .parking-lot-toggle:hover { border-color: rgba(30,25,79
     overflow-y: auto;
     padding: 1.5rem;
     padding-bottom: 6rem; /* clearance for fixed prompt bar during sessions */
+    position: relative;
+}
+
+/* Banner side borders — only during active session (welcome hidden) */
+.chat-area::before,
+.chat-area::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 18%;
+    background: url('banner.jpg') center center / cover no-repeat;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.5s ease;
+}
+.chat-area::before {
+    left: 0;
+    background-position: left center;
+}
+.chat-area::after {
+    right: 0;
+    background-position: right center;
+}
+
+/* Only show when welcome is hidden (session active) */
+.chat-area:has(.welcome.hidden)::before,
+.chat-area:has(.welcome.hidden)::after {
+    opacity: 0.1;
+}
+
+/* Ensure chat content sits above the background */
+.chat-area > * {
+    position: relative;
+    z-index: 1;
 }
 
 /* Welcome state: input is inline so no extra bottom padding needed */
