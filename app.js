@@ -983,8 +983,8 @@ function restoreSession(session) {
             if (swapMode) breakEl.dataset.mode = swapMode;
             breakEl.innerHTML = `<div class="msg-intro-label"><a class="intro-label-link" href="toolbox.html#${exerciseKey}" target="_blank" rel="noopener">${swappedName}</a></div>${desc}`;
             messagesEl.appendChild(breakEl);
-        } else if (m.role === 'user' && m.content === 'Please start the session.') {
-            // Skip synthetic kickoff — WAiDE's opening response is enough
+        } else if (m.role === 'user' && (m.content === 'Please start the session.' || m.content.startsWith('[SYSTEM]'))) {
+            // Skip synthetic kickoff — facilitator's opening response is enough
         } else {
             appendMessage(m.role === 'user' ? 'user' : 'agent', m.content);
         }
