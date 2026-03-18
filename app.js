@@ -713,6 +713,12 @@ function forceCloseSession() {
     state.pushHarder = false;
     $('.session-actions')?.remove();
     $('#nextExercisePanel')?.remove();
+    // Hide pitch preview card
+    const pitchPreview = document.getElementById('pitchPreview');
+    if (pitchPreview) pitchPreview.classList.add('hidden');
+    // Hide input bar on welcome
+    if (inputArea) inputArea.style.display = 'none';
+    document.body.classList.remove('in-session', 'board-open');
     clearSession();
 }
 
