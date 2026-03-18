@@ -2660,6 +2660,9 @@ html[data-theme="light"] .tool-entry-time { background: rgba(30,25,79,0.05); }
     grid-template-columns: 1fr;
     height: 100%;
     overflow: hidden;
+    background: var(--bg);
+    position: relative;
+    z-index: 1;
 }
 
 .workshop-layout.board-active {
