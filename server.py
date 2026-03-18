@@ -2129,18 +2129,14 @@ Given the conversation below, recommend exactly 2 different thinking tools that 
 Do NOT recommend the tool they're currently using.
 
 Available tools:
-five-whys (Clarify): Ask "why?" five times to find root causes
-jtbd (Clarify): Understand what your customer is truly trying to accomplish
-empathy-map (Clarify): Map what users say, think, do, and feel
-hmw (Ideate): Reframe the problem as "How Might We...?" questions
-scamper (Ideate): Generate ideas using Substitute, Combine, Adapt, Modify, Put to other uses, Eliminate, Reverse
-crazy-8s (Ideate): Generate 8 distinct ideas fast
-pre-mortem (Validate): Imagine failure and work backwards to identify risks
-devils-advocate (Validate): Stress-test the idea against its sharpest critic
-rapid-experiment (Validate): Design the cheapest test to kill the riskiest assumption
-lean-canvas (Develop): Map the key elements of the initiative on one page
-effectuation (Develop): Start with what you have, not a goal
-analogical (Develop): Borrow solutions from other domains
+elevator-pitch (Clarify): Articulate your idea in one clear sentence — 5-10 min
+five-whys (Clarify): Ask "why?" five times to find root causes — 15 min
+crazy-8s (Ideate): Generate 8 distinct ideas fast — 15 min
+hmw (Ideate): Reframe the problem as "How Might We...?" questions — 20 min
+pre-mortem (Validate): Imagine failure and work backwards to identify risks — 20 min
+devils-advocate (Validate): Stress-test the idea against its sharpest critic — 25 min
+lean-canvas (Develop): Map the key elements of the initiative on one page — 25 min
+effectuation (Develop): Start with what you have, not a goal — 20 min
 
 Respond with ONLY valid JSON in this exact format (no markdown, no other text):
 {

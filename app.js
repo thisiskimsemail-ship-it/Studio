@@ -138,10 +138,10 @@ function updateStageLogo(mode) {
 
 // === BREADCRUMB DROPDOWN ===
 const STAGE_TOOLS = {
-    reframe: ['five-whys', 'jtbd', 'empathy-map', 'elevator-pitch'],
-    ideate: ['hmw', 'scamper', 'crazy-8s'],
-    debate: ['pre-mortem', 'devils-advocate', 'rapid-experiment'],
-    framework: ['lean-canvas', 'effectuation', 'analogical']
+    reframe: ['elevator-pitch', 'five-whys'],
+    ideate: ['crazy-8s', 'hmw'],
+    debate: ['pre-mortem', 'devils-advocate'],
+    framework: ['lean-canvas', 'effectuation']
 };
 
 function updateBreadcrumbDropdown(currentMode, currentExercise) {
