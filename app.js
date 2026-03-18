@@ -1377,9 +1377,9 @@ async function generateReport() {
 }
 
 reportCtaBtn.addEventListener('click', async () => {
-    // Option C: pre-report handoff — ask about a relevant Wade program on first click
-    // Skip if session is very short (< 3 exchanges) or already asked
-    if (!state.preReportAsked && state.exchangeCount >= 3) {
+    // Skip pre-report handoff — go straight to report generation
+    // Course recommendation is already in the report itself
+    if (false && !state.preReportAsked && state.exchangeCount >= 3) {
         state.preReportAsked = true;
         reportCtaBtn.disabled = true;
         reportCtaBtn.textContent = 'One moment...';

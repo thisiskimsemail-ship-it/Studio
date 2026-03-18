@@ -501,9 +501,9 @@ Also mention: "You can also save your session, download your canvas, or generate
 
 Work through the 9 blocks conversationally. Do NOT present them all at once.
 
-PACING — CRITICAL: Do NOT spend more than 1-2 exchanges per block. Get 1-2 key ideas for the block, name the hypothesis, then MOVE ON to the next block. The whole canvas should take 9-15 exchanges, not 30. If the user gives a clear answer, accept it and advance. Only push back if the answer is genuinely vague or contradictory. Speed is part of the workshop energy — keep momentum.
+PACING — CRITICAL: ONE exchange per block. Ask the question, get an answer, emit the [CANVAS] tag, move to the next block. Do NOT ask follow-up questions on the same block unless the answer is genuinely empty or incoherent. The whole canvas should take 9-12 exchanges total. If something relevant to an earlier block comes up later, go back and update it — but always keep moving forward first.
 
-After each block, briefly name the hypothesis in one sentence: "So your hypothesis is [X]." Then immediately transition to the next block.
+After each answer, briefly name the hypothesis in one sentence: "So your hypothesis is [X]." Emit the canvas tag. Then immediately ask about the next block. No pausing, no deep-diving. Keep the energy up.
 
 CANVAS BOARD TAGS — CRITICAL
 After you and the user agree on the key content for each canvas block, emit a signal tag so the visual canvas board updates in real-time. Format: [CANVAS:block_id: concise summary]
@@ -720,14 +720,26 @@ def chat():
 
     # Add end-of-exercise wrap signal for non-routing modes
     if mode != 'routing':
-        system_prompt += (
-            "\n\n---\n\n"
-            "END-OF-EXERCISE SIGNAL: When you have genuinely completed the exercise framework — "
-            "all key phases done, synthesis delivered, the user has clear insights and concrete next steps, "
-            "and continuing would add little value — append the exact tag `[WRAP]` on its own line "
-            "at the very end of your response. Only emit [WRAP] once per session, only when the work "
-            "is truly complete. Never use [WRAP] mid-exercise or immediately after asking a follow-up question."
-        )
+        if exercise == 'lean-canvas':
+            system_prompt += (
+                "\n\n---\n\n"
+                "END-OF-EXERCISE SIGNAL — LEAN CANVAS SPECIFIC:\n"
+                "Do NOT emit [WRAP] until ALL of these conditions are met:\n"
+                "1. You have emitted [CANVAS:...] tags for ALL 9 blocks: problem, segments, uvp, solution, channels, revenue, costs, metrics, unfair_advantage\n"
+                "2. You have completed the SYNTHESIS step (named the riskiest assumption)\n"
+                "3. You have completed the CLOSING step (If-Then commitment)\n"
+                "If ANY block is missing a [CANVAS] tag, do NOT emit [WRAP]. Ask about the missing blocks first.\n"
+                "When all conditions are met, append `[WRAP]` on its own line at the very end of your response."
+            )
+        else:
+            system_prompt += (
+                "\n\n---\n\n"
+                "END-OF-EXERCISE SIGNAL: When you have genuinely completed the exercise framework — "
+                "all key phases done, synthesis delivered, the user has clear insights and concrete next steps, "
+                "and continuing would add little value — append the exact tag `[WRAP]` on its own line "
+                "at the very end of your response. Only emit [WRAP] once per session, only when the work "
+                "is truly complete. Never use [WRAP] mid-exercise or immediately after asking a follow-up question."
+            )
 
     def generate():
         try:
