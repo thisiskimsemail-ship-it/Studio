@@ -126,6 +126,17 @@ body[data-mode] .session-action-btn:hover { color: var(--stage-color); }
 
 /* Pitch preview border */
 body[data-mode] .pitch-preview { border-color: color-mix(in srgb, var(--stage-color) 20%, transparent); }
+
+/* Board pane — stage colour border and header */
+body[data-mode] .board-pane { border-left-color: var(--stage-color); }
+body[data-mode] .board-title { color: var(--stage-color); }
+body[data-mode] .board-grid-canvas,
+body[data-mode] .board-grid-pitch,
+body[data-mode] .board-grid-premortem,
+body[data-mode] .board-grid-effectuation,
+body[data-mode] .board-grid-default { border-color: color-mix(in srgb, var(--stage-color) 20%, transparent); }
+body[data-mode] .zone-name { color: var(--stage-color); }
+body[data-mode] .board-card { border-left-color: var(--stage-color); }
 body[data-mode] .pitch-slot.filled { color: var(--stage-color); border-bottom-color: var(--stage-color); }
 body[data-mode] .pitch-progress-dot.filled { background: var(--stage-color); border-color: var(--stage-color); }
 

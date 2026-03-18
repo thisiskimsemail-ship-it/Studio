@@ -680,8 +680,35 @@ function forceCloseSession() {
 }
 
 sessionClose.addEventListener('click', () => {
-    if (!window.confirm("End this session? Your conversation won't be saved.")) return;
+    // Show save modal with option to save or discard
+    const overlay = document.getElementById('saveModalOverlay');
+    if (overlay && state.messages.length > 2) {
+        // Temporarily override the modal to add a "Leave without saving" option
+        const statusEl = document.getElementById('saveModalStatus');
+        if (statusEl) {
+            statusEl.innerHTML = '<a href="#" id="discardSessionLink" style="color: var(--text-muted); font-size: 0.75rem; text-decoration: underline;">Leave without saving</a>';
+            statusEl.classList.remove('hidden');
+        }
+        overlay.classList.remove('hidden');
+        const emailInput = document.getElementById('saveModalEmail');
+        if (emailInput) emailInput.focus();
+        // Wire up discard link
+        const discardLink = document.getElementById('discardSessionLink');
+        if (discardLink) {
+            discardLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                overlay.classList.add('hidden');
+                if (statusEl) statusEl.classList.add('hidden');
+                doCloseSession();
+            });
+        }
+        return;
+    }
 
+    doCloseSession();
+});
+
+function doCloseSession() {
     state.mode = null;
     state.exercise = null;
     state.messages = [];
@@ -716,8 +743,9 @@ sessionClose.addEventListener('click', () => {
     routingBack.classList.add('hidden');
     state.projectContext = [];
     state.routing = false;
+    document.body.classList.remove('in-session', 'board-open');
     clearSession();
-});
+}
 
 // === SWAP TOOLS ===
 
