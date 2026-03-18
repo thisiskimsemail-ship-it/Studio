@@ -2681,8 +2681,6 @@ html[data-theme="light"] .tool-entry-time { background: rgba(30,25,79,0.05); }
     flex-shrink: 0;
 }
 
-.zone-icon { font-size: 0.75rem; }
-
 .zone-name {
     font-size: 0.7rem;
     font-weight: 600;
