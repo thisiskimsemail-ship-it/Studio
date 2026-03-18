@@ -102,21 +102,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // === SCROLL-REVEAL FOOTER ===
-// Only reveal after user has scrolled — never on initial page load
+// Hidden by default. Only reveal after user has scrolled down past the CTA.
 document.addEventListener('DOMContentLoaded', () => {
     const footer = document.getElementById('wadeCta');
-    if (!footer) return;
-    let userHasScrolled = false;
-    const onFirstScroll = () => {
-        userHasScrolled = true;
-        window.removeEventListener('scroll', onFirstScroll);
-        // Now start observing
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(e => { if (e.isIntersecting) footer.classList.add('visible'); });
-        }, { threshold: 0.1 });
-        observer.observe(footer);
+    const cta = document.getElementById('enterStudioBtn');
+    if (!footer || !cta) return;
+    let revealed = false;
+    const checkScroll = () => {
+        if (revealed) return;
+        const ctaRect = cta.getBoundingClientRect();
+        // Only reveal if user has scrolled AND the CTA is above the viewport
+        if (window.scrollY > 100 && ctaRect.bottom < 0) {
+            revealed = true;
+            footer.classList.add('visible');
+            window.removeEventListener('scroll', checkScroll);
+        }
     };
-    window.addEventListener('scroll', onFirstScroll, { passive: true });
+    window.addEventListener('scroll', checkScroll, { passive: true });
 });
 
 // === LOGO SWAP PER STAGE ===
@@ -133,6 +135,57 @@ function updateStageLogo(mode) {
     const src = STAGE_LOGOS[mode] || 'logo.png';
     if (!logo.src.endsWith(src)) logo.src = src;
 }
+
+// === BREADCRUMB DROPDOWN ===
+const STAGE_TOOLS = {
+    reframe: ['five-whys', 'jtbd', 'empathy-map', 'elevator-pitch'],
+    ideate: ['hmw', 'scamper', 'crazy-8s'],
+    debate: ['pre-mortem', 'devils-advocate', 'rapid-experiment'],
+    framework: ['lean-canvas', 'effectuation', 'analogical']
+};
+
+function updateBreadcrumbDropdown(currentMode, currentExercise) {
+    const inner = document.getElementById('breadcrumbDropdownInner');
+    if (!inner) return;
+    inner.innerHTML = '';
+    const STAGE_ORDER_ALL = ['reframe', 'ideate', 'debate', 'framework'];
+    STAGE_ORDER_ALL.forEach(stage => {
+        const section = document.createElement('div');
+        section.className = 'breadcrumb-dropdown-section';
+        section.textContent = (MODE_LABELS[stage] || stage).toUpperCase();
+        inner.appendChild(section);
+        (STAGE_TOOLS[stage] || []).forEach(tool => {
+            const btn = document.createElement('button');
+            btn.className = 'breadcrumb-dropdown-item';
+            if (tool === currentExercise) btn.classList.add('active');
+            btn.textContent = EXERCISE_LABELS[tool] || tool;
+            btn.addEventListener('click', () => {
+                document.getElementById('breadcrumbDropdown').classList.add('hidden');
+                document.getElementById('breadcrumbTool').classList.remove('open');
+                startExercise(stage, tool);
+            });
+            inner.appendChild(btn);
+        });
+    });
+}
+
+// Toggle dropdown on breadcrumb tool click
+document.addEventListener('DOMContentLoaded', () => {
+    const toolBtn = document.getElementById('breadcrumbTool');
+    const dropdown = document.getElementById('breadcrumbDropdown');
+    if (!toolBtn || !dropdown) return;
+    toolBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = !dropdown.classList.contains('hidden');
+        dropdown.classList.toggle('hidden');
+        toolBtn.classList.toggle('open');
+    });
+    // Close on outside click
+    document.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+        toolBtn.classList.remove('open');
+    });
+});
 
 // === TOOLBOX TOGGLE (mobile only) ===
 document.addEventListener('DOMContentLoaded', () => {
@@ -583,9 +636,12 @@ function startExercise(mode, exercise, startMsg = null) {
     sessionMode.textContent = MODE_LABELS[mode] || mode;
     sessionExercise.textContent = EXERCISE_LABELS[exercise] || exercise;
 
-    // Update session label
-    const sessionLabelEl = document.getElementById('sessionLabelExercise');
-    if (sessionLabelEl) sessionLabelEl.textContent = EXERCISE_LABELS[exercise] || exercise;
+    // Update breadcrumb: STAGE → Tool
+    const breadcrumbStage = document.getElementById('breadcrumbStage');
+    const breadcrumbTool = document.getElementById('breadcrumbTool');
+    if (breadcrumbStage) breadcrumbStage.textContent = (MODE_LABELS[mode] || mode).toUpperCase();
+    if (breadcrumbTool) breadcrumbTool.innerHTML = `${EXERCISE_LABELS[exercise] || exercise} <svg class="breadcrumb-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>`;
+    updateBreadcrumbDropdown(mode, exercise);
 
     // Update footer label
     modeLabel.innerHTML = `${EXERCISE_LABELS[exercise] || exercise} ·`;
@@ -1677,7 +1733,7 @@ leadForm.addEventListener('submit', (e) => {
 async function downloadReport() {
     const exName = EXERCISE_LABELS[state.exercise] || state.exercise;
     const mName = MODE_LABELS[state.mode] || state.mode;
-    const stageColor = { reframe: '#ef5a21', ideate: '#ED3694', debate: '#27BDBE', framework: '#E4E517' }[state.mode] || '#ef5a21';
+    const stageColor = { reframe: '#F15A22', ideate: '#ED3694', debate: '#27BDBE', framework: '#E4E517' }[state.mode] || '#F15A22';
     const stageTextColor = state.mode === 'framework' ? '#1a1a2e' : '#fff';
     const date = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -2776,5 +2832,7 @@ document.addEventListener('DOMContentLoaded', () => {
         startExercise(mode, toolParam);
         // Belt-and-suspenders: ensure input bar is visible after direct tool launch
         if (inputArea) inputArea.style.display = '';
+        // Double-ensure after any async reflows
+        setTimeout(() => { if (inputArea) inputArea.style.display = ''; }, 500);
     }
 });
