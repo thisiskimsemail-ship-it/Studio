@@ -553,6 +553,8 @@ function startExercise(mode, exercise, startMsg = null) {
     // Switch board layout based on exercise
     if (exercise === 'lean-canvas') {
         switchBoardLayout('lean-canvas');
+    } else if (exercise === 'elevator-pitch') {
+        switchBoardLayout('elevator-pitch');
         // If coming from elevator pitch, carry components into canvas
         if (Object.values(state.pitch).some(v => v)) {
             pitchToCanvas();
@@ -1285,6 +1287,12 @@ async function streamResponse() {
             if (['customer', 'problem', 'solution', 'benefit', 'differentiator'].includes(component)) {
                 state.pitch[component] = text;
                 updatePitchPreview();
+                // Add/update card on the pitch board
+                const zone = 'pitch-' + component;
+                // Remove existing card for this zone (replace, don't stack)
+                const existing = state.board.cards.find(c => c.zone === zone);
+                if (existing) removeBoardCard(existing.id);
+                addBoardCard(text, zone, state.mode, 'Elevator Pitch');
             }
         }
         fullText = fullText.replace(/\n?\[PITCH:[a-z_-]+:\s*[^\]]+\]/g, '').trim();
@@ -1855,6 +1863,16 @@ const BOARD_LAYOUTS = {
             { id: 'metrics', name: 'Key Metrics', empty: 'Numbers that matter', hint: 'Key numbers to track', colour: 'teal' }
         ],
         gridClass: 'board-grid-canvas'
+    },
+    'elevator-pitch': {
+        zones: [
+            { id: 'pitch-customer', name: 'Target Customer', empty: 'Who is this for?', hint: 'The specific person who needs this most', colour: 'orange' },
+            { id: 'pitch-problem', name: 'Problem / Need', empty: 'What pain do they have?', hint: 'The urgent problem they face', colour: 'orange' },
+            { id: 'pitch-solution', name: 'Product / Service', empty: 'What are you building?', hint: 'Name and category', colour: 'pink' },
+            { id: 'pitch-benefit', name: 'Key Benefit', empty: 'What changes for them?', hint: 'The specific outcome they get', colour: 'teal' },
+            { id: 'pitch-differentiator', name: 'Differentiator', empty: 'Why you, not them?', hint: 'What makes you different from alternatives', colour: 'yellow' }
+        ],
+        gridClass: 'board-grid-pitch'
     }
 };
 

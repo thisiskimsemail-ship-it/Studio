@@ -1466,6 +1466,46 @@ html[data-theme="light"] .pitch-progress-dot { border-color: rgba(0,0,0,0.15); }
 html[data-theme="light"] .pitch-slot { border-bottom-color: rgba(0,0,0,0.1); color: #999; }
 html[data-theme="light"] .pitch-slot.filled { color: var(--orange); }
 
+/* === PITCH BOARD GRID === */
+.board-grid-pitch {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 1px;
+    overflow-y: auto;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    flex: 1;
+}
+.board-grid-pitch .board-zone {
+    min-height: 150px;
+    border-radius: 0;
+    background: var(--bg);
+}
+.board-grid-pitch .zone-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.board-grid-pitch .board-card-text {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: #f5f5f5;
+}
+@media (max-width: 1024px) {
+    .board-grid-pitch {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+    }
+}
+@media (max-width: 480px) {
+    .board-grid-pitch {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Focus glow — always orange */
 .input-field:focus { box-shadow: 0 0 0 3px rgba(241,90,34,0.12); border-color: rgba(241,90,34,0.4); }
 
