@@ -101,6 +101,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// === SCROLL-REVEAL FOOTER ===
+document.addEventListener('DOMContentLoaded', () => {
+    const footer = document.getElementById('wadeCta');
+    if (!footer) return;
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) footer.classList.add('visible'); });
+    }, { threshold: 0.15 });
+    observer.observe(footer);
+});
+
 // === LOGO SWAP PER STAGE ===
 const STAGE_LOGOS = {
     reframe: 'logo-orange.png',

@@ -1750,7 +1750,13 @@ html[data-theme="light"] .mic-btn:hover { border-color: rgba(30,25,79,0.3); colo
     max-width: 860px;
     border-top: 1px solid rgba(255,255,255,0.08);
     padding-bottom: 6rem; /* clear the fixed prompt bar */
-    animation: fadeIn 0.3s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.site-footer.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 
