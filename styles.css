@@ -3009,29 +3009,33 @@ html[data-theme="light"] .tool-entry-time { background: rgba(30,25,79,0.05); }
 }
 
 /* Lean Canvas board: 3x3 grid matching the standard canvas layout */
+/* Lean Canvas grid — matches Ash Maurya's layout */
 .board-grid-canvas {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: auto auto auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 0.8fr;
     gap: 1px;
     overflow-y: auto;
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
+    flex: 1;
 }
-/* Canvas layout: Problem/Solution/UVP top row, Unfair/Segments/Channels middle, Revenue/Costs/Metrics bottom */
-.board-grid-canvas .board-zone[data-zone="problem"]  { grid-column: 1; grid-row: 1; }
-.board-grid-canvas .board-zone[data-zone="solution"]  { grid-column: 2; grid-row: 1; }
-.board-grid-canvas .board-zone[data-zone="uvp"]       { grid-column: 3; grid-row: 1; }
-.board-grid-canvas .board-zone[data-zone="unfair"]    { grid-column: 1; grid-row: 2; }
-.board-grid-canvas .board-zone[data-zone="segments"]  { grid-column: 2; grid-row: 2; }
-.board-grid-canvas .board-zone[data-zone="channels"]  { grid-column: 3; grid-row: 2; }
-.board-grid-canvas .board-zone[data-zone="revenue"]   { grid-column: 1; grid-row: 3; }
-.board-grid-canvas .board-zone[data-zone="costs"]     { grid-column: 2; grid-row: 3; }
-.board-grid-canvas .board-zone[data-zone="metrics"]   { grid-column: 3; grid-row: 3; }
+/* Row 1 — top: Problem spans 2 rows, Solution top, UVP spans 2 rows, Unfair top, Segments spans 2 rows */
+.board-grid-canvas .board-zone[data-zone="problem"]   { grid-column: 1; grid-row: 1 / 3; }
+.board-grid-canvas .board-zone[data-zone="solution"]   { grid-column: 2; grid-row: 1; }
+.board-grid-canvas .board-zone[data-zone="uvp"]        { grid-column: 3; grid-row: 1 / 3; }
+.board-grid-canvas .board-zone[data-zone="unfair"]     { grid-column: 4; grid-row: 1; }
+.board-grid-canvas .board-zone[data-zone="segments"]   { grid-column: 5; grid-row: 1 / 3; }
+/* Row 2 — mid: Key Metrics under Solution, Channels under Unfair */
+.board-grid-canvas .board-zone[data-zone="metrics"]    { grid-column: 2; grid-row: 2; }
+.board-grid-canvas .board-zone[data-zone="channels"]   { grid-column: 4; grid-row: 2; }
+/* Row 3 — bottom: Cost Structure left half, Revenue Streams right half */
+.board-grid-canvas .board-zone[data-zone="costs"]      { grid-column: 1 / 3; grid-row: 3; }
+.board-grid-canvas .board-zone[data-zone="revenue"]    { grid-column: 3 / 6; grid-row: 3; }
 
 .board-grid-canvas .board-zone {
-    min-height: 120px;
+    min-height: 80px;
     border-radius: 0;
     background: var(--bg);
 }
@@ -3044,8 +3048,15 @@ html[data-theme="light"] .tool-entry-time { background: rgba(30,25,79,0.05); }
 .board-grid-canvas .zone-name {
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--orange);
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
+/* Zone name colours match their section */
+.board-zone[data-colour="orange"] .zone-name { color: var(--orange); }
+.board-zone[data-colour="pink"] .zone-name   { color: var(--orange); }
+.board-zone[data-colour="teal"] .zone-name   { color: var(--orange); }
+.board-zone[data-colour="yellow"] .zone-name { color: var(--orange); }
 .board-grid-canvas .board-card-text {
     font-size: 0.85rem;
     line-height: 1.45;
@@ -3057,10 +3068,11 @@ html[data-theme="light"] .tool-entry-time { background: rgba(30,25,79,0.05); }
 
 /* Zone hint text */
 .zone-hint {
-    font-size: 0.6rem;
-    color: rgba(255,255,255,0.2);
-    margin-bottom: 0.3rem;
-    line-height: 1.3;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 0.4rem;
+    line-height: 1.35;
+    font-style: italic;
 }
 /* Hide hint when zone has cards — JS handles this via zone-hint class toggle */
 
@@ -3270,14 +3282,33 @@ html[data-theme="light"] .board-toggle { border-color: rgba(0,0,0,0.15); color: 
         border-radius: 0;
     }
     .board-pane.hidden { display: none !important; }
+    .board-close-btn {
+        font-size: 1.2rem;
+        width: 36px;
+        height: 36px;
+    }
     .board-grid-canvas {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         grid-template-rows: auto;
     }
     .board-grid-canvas .board-zone {
-        grid-column: 1 !important;
+        grid-column: auto !important;
         grid-row: auto !important;
-        min-height: 80px;
+        min-height: 70px;
+    }
+    /* Cost/Revenue still span full width on mobile */
+    .board-grid-canvas .board-zone[data-zone="costs"],
+    .board-grid-canvas .board-zone[data-zone="revenue"] {
+        grid-column: 1 / -1 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .board-grid-canvas {
+        grid-template-columns: 1fr;
+    }
+    .board-grid-canvas .board-zone {
+        grid-column: 1 !important;
     }
 }
 
