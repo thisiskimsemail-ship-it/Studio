@@ -1956,6 +1956,19 @@ html[data-theme="light"] .mic-btn:hover { border-color: rgba(30,25,79,0.3); colo
 .site-footer-cta:hover {
     opacity: 0.88;
 }
+.site-footer-legal {
+    text-align: center;
+    padding: 0.75rem 0;
+    font-size: 0.75rem;
+}
+.site-footer-legal a {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+.site-footer-legal a:hover {
+    color: var(--text-dim);
+    text-decoration: underline;
+}
 
 .report-copy-notice {
     font-size: 0.8125rem;
