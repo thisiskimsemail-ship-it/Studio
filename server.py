@@ -278,6 +278,11 @@ Facilitator moves:
 
 After 5 rounds, synthesise the chain: show them the journey from symptom → root cause. Then ask: "Now that we can see the root cause, does the original problem still feel like the right thing to solve? Or has a different, deeper problem emerged?"
 
+## Board Population — CRITICAL
+After each "Why?" round, capture the key finding as an [INSIGHT:] tag. Example: [INSIGHT: The real blocker isn't resources — it's unclear ownership]
+When the root cause emerges, tag it: [INSIGHT: Root cause — team avoids hard conversations about product direction]
+When next steps are agreed, emit [ACTION:] tags. Aim for 4-5 [INSIGHT:] tags and 1-2 [ACTION:] tags by the end.
+
 Keep it feeling like a conversation, not an interrogation. Be warm but persistent.""" + FACILITATOR_OVERLAY,
 
     "reframe:jtbd": STUDIO_IDENTITY + """
@@ -342,6 +347,11 @@ Ask the user which 1-2 HMW questions excite them most. Then probe: "What makes t
 
 End with: "You came in with a problem. Now you have a question worth solving. What's the smallest thing you could do this week to explore that direction?"
 
+## Board Population — CRITICAL
+As each HMW question is generated, capture it with an [IDEA:] tag. Example: [IDEA: HMW turn our biggest constraint into a feature?]
+When the user identifies their favourite HMW, emit an [INSIGHT:] tag explaining why it resonates. Example: [INSIGHT: The customer-first reframe shifts focus from internal processes to lived experience]
+When next steps emerge, emit [ACTION:] tags. Aim for 5-6 [IDEA:] tags (one per HMW), 1-2 [INSIGHT:] tags, and 1-2 [ACTION:] tags.
+
 Be energetic and generative. This exercise should feel like opening windows, not closing them.""" + FACILITATOR_OVERLAY,
 
     # === TEST EXERCISES ===
@@ -405,6 +415,14 @@ Ask: "If this idea is wrong, what do you lose? Time, money, reputation, opportun
 Then: "What's the one thing that would make you abandon this plan? What would have to be true?"
 
 End with synthesis: "Here's where your idea is strong: [strengths]. Here's where it's vulnerable: [weaknesses]. The one thing I'd investigate before committing is [X]."
+
+## Board Population — CRITICAL
+After each round, capture the key finding on the board:
+- Round 1 (Steel Man): [INSIGHT: Strongest version of their argument — one-sentence summary]
+- Round 2 (Assumptions): [INSIGHT:] tag for each exposed assumption. Example: [INSIGHT: Assumption — early adopters will pay premium pricing without social proof]
+- Round 3 (Competitor): [INSIGHT:] for the most dangerous counter-move
+- Round 4 (Survive Test): [ACTION:] for what they'd investigate before committing
+Final synthesis: [INSIGHT:] for strengths and [INSIGHT:] for vulnerabilities. Aim for 5-6 [INSIGHT:] tags and 1-2 [ACTION:] tags.
 
 Be rigorous but respectful. You're a sparring partner, not an enemy. The goal is a stronger idea, not a defeated founder.""" + FACILITATOR_OVERLAY,
 
@@ -477,6 +495,15 @@ Review the full list together. Ask:
 - "If budget and time weren't constraints, which would you build?"
 - "Which ideas could you combine?"
 - "What's the lowest-effort version of the most interesting idea?"
+
+## Board Population — CRITICAL
+As each idea emerges, capture it on the Workshop Board with an [IDEA:] tag. Use a short, punchy label — not the user's full description but a distilled version that captures the essence. Example: [IDEA: Subscription sock box with monthly surprise themes]
+
+After all 8 ideas are on the table, SYNTHESISE: look for patterns, clusters, and combinations across the ideas. Emit [INSIGHT:] tags for any patterns you spot. Example: [INSIGHT: Three of your ideas share a community-building thread — that's your instinct talking]
+
+When the user picks their top idea(s), emit [ACTION:] tags for next steps. Example: [ACTION: Test the influencer sock concept with 5 Instagram creators this week]
+
+Aim for 8 [IDEA:] tags (one per idea), 1-2 [INSIGHT:] tags (patterns/synthesis), and 1-2 [ACTION:] tags (next steps). The board should be full by the end of this exercise.
 
 End with: "Pick one idea to carry forward. Not the safest — the most interesting. What's the first thing you'd do to test whether it has legs?" """ + FACILITATOR_OVERLAY,
 
@@ -2346,6 +2373,24 @@ def generate_report():
         items = '\n'.join([f"- {item.get('text', '')} (from {item.get('fromExercise', 'session')})" for item in parking_lot])
         parking_lot_block = f"\n\nPARKING_LOT_ITEMS:\n{items}\n"
 
+    # Workshop Board cards (insights, ideas, actions captured during the session)
+    board_cards = data.get('board_cards', [])
+    board_block = ''
+    if board_cards:
+        grouped = {}
+        for card in board_cards:
+            zone = card.get('zone', 'general')
+            text = card.get('text', '')
+            if text:
+                grouped.setdefault(zone, []).append(text)
+        lines = []
+        for zone, items_list in grouped.items():
+            zone_label = zone.replace('-', ' ').title()
+            lines.append(f"**{zone_label}:**")
+            for item in items_list:
+                lines.append(f"- {item}")
+        board_block = f"\n\nWORKSHOP_BOARD_CARDS (user-reviewed and edited — treat these as the authoritative session outputs):\n" + '\n'.join(lines) + "\n"
+
     exercise_context = f"IMPORTANT: This session used the **{exercise_name}** exercise from the **{mode_name}** stage. Always refer to this exercise by its correct name ({exercise_name}) — do not use any other exercise name even if it appears in the conversation history.\n\n"
     # Select tool-specific report prompt
     TOOL_REPORT_PROMPTS = {
@@ -2359,7 +2404,7 @@ def generate_report():
         'lean-canvas': REPORT_PROMPT,  # Lean Canvas uses the original detailed template
     }
     report_template = TOOL_REPORT_PROMPTS.get(exercise, REPORT_PROMPT)
-    system = exercise_context + report_template.replace('{WADE_PROGRAMS_PLACEHOLDER}', programs_block).replace('{EXERCISE_PLACEHOLDER}', exercise_name).replace('{EXERCISE_KEY}', exercise) + parking_lot_block + WADE_KNOWLEDGE_BLOCK
+    system = exercise_context + report_template.replace('{WADE_PROGRAMS_PLACEHOLDER}', programs_block).replace('{EXERCISE_PLACEHOLDER}', exercise_name).replace('{EXERCISE_KEY}', exercise) + parking_lot_block + board_block + WADE_KNOWLEDGE_BLOCK
 
     # Trim messages to avoid token limits — keep first 2 and last 10 messages
     report_messages = list(messages)

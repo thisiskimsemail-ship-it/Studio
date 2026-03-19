@@ -1206,7 +1206,7 @@ function renderWrapPrompt() {
     actionsHtml += '<button class="wrap-btn wrap-btn-report">Access your Studio Session report →</button>';
 
     wrapDiv.innerHTML = `
-        <p class="wrap-prompt-text">This exercise is complete.</p>
+        <p class="wrap-prompt-text">Nice work. Your report is being generated now.</p>
         <div class="wrap-rating">
             <span class="wrap-rating-label">How did the session go?</span>
             <button class="wrap-rate-btn" data-rating="up" title="Helpful">👍</button>
@@ -1567,6 +1567,8 @@ async function streamResponse() {
             // Show wrap-up card if facilitator signalled the exercise is complete
             if (wrapSignaled && !state.reportGenerated) {
                 state.wrapped = true;
+                // Hide input bar — session is over
+                if (inputArea) inputArea.style.display = 'none';
                 renderWrapPrompt();
                 // Auto-generate report in the background while user reads Pete's closing message
                 generateReport();
@@ -1612,7 +1614,8 @@ async function generateReport() {
                 mode: state.mode,
                 exercise: state.exercise,
                 messages: reportMessages,
-                parking_lot: state.parkingLot
+                parking_lot: state.parkingLot,
+                board_cards: state.board.cards
             })
         });
         clearTimeout(timeout);
@@ -1628,6 +1631,11 @@ async function generateReport() {
         state.reportText = data.report;
         state.reportGenerated = true;
 
+        // Clean up end-of-session clutter
+        document.querySelector('.chat-action-btns')?.remove();
+        // Update wrap card: remove the report button (report is now visible below)
+        document.querySelector('.wrap-btn-report')?.remove();
+
         // Show partial preview + inline unlock form (no modal gate)
         reportContent.innerHTML = renderMarkdown(state.reportText);
         populateReportMeta();
@@ -1635,7 +1643,9 @@ async function generateReport() {
         reportCard.classList.add('report-preview');
         reportUnlock.classList.remove('hidden');
         reportCta.classList.add('hidden');
-        scrollToBottom();
+
+        // Scroll report into view smoothly
+        reportCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     } catch (err) {
         reportCtaBtn.textContent = 'Connection error — try again';
