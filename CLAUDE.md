@@ -37,7 +37,7 @@ Railway picks up the push and deploys in ~90 seconds.
 | File | Purpose |
 |---|---|
 | `server.py` | Flask backend — all routes, system prompts, WADE_KNOWLEDGE_BLOCK, email, lead capture |
-| `index.html` | All UI — welcome cards, chat, report, lead form. Cache-bust script tag at `?v=58` |
+| `index.html` | All UI — welcome cards, chat, report, lead form. Cache-bust script tag at `?v=60` |
 | `app.js` | Frontend logic — `EXERCISE_LABELS`, `MODE_LABELS`, chat state, report trigger |
 | `styles.css` | All styling — GT Walsheim font, stage colours, dark/light theme, responsive layout |
 | `fonts/` | GT-Walsheim-Regular.woff/.ttf/.otf |
