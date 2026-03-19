@@ -310,6 +310,29 @@
         </div>
     </div>
 
-    <script src="app.js?v=84"></script>
+    <!-- Feedback widget -->
+    <button class="feedback-tab" id="feedbackTab">Feedback</button>
+    <div class="feedback-panel hidden" id="feedbackPanel">
+        <div class="feedback-header">
+            <span>How was your experience?</span>
+            <button class="feedback-close" id="feedbackClose">&times;</button>
+        </div>
+        <p class="feedback-beta">The Studio is in beta. Help us make it amazing by sharing your experience.</p>
+        <div class="feedback-rating" id="feedbackRating">
+            <button class="feedback-star" data-rating="1">1</button>
+            <button class="feedback-star" data-rating="2">2</button>
+            <button class="feedback-star" data-rating="3">3</button>
+            <button class="feedback-star" data-rating="4">4</button>
+            <button class="feedback-star" data-rating="5">5</button>
+        </div>
+        <div class="feedback-rating-labels">
+            <span>Not great</span>
+            <span>Loved it</span>
+        </div>
+        <textarea class="feedback-input" id="feedbackInput" placeholder="Tell us more... what worked, what didn't, what you'd change." rows="3"></textarea>
+        <button class="feedback-submit" id="feedbackSubmit">Send feedback</button>
+    </div>
+
+    <script src="app.js?v=85"></script>
 </body>
 </html>

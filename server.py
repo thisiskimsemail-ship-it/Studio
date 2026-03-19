@@ -2973,6 +2973,92 @@ def capture_lead():
     return jsonify({'success': True})
 
 
+# === FEEDBACK ===
+
+FEEDBACK_FILE = os.path.join(os.path.dirname(__file__), 'feedback.json')
+
+@app.route('/api/feedback', methods=['POST'])
+def save_feedback():
+    data = request.json
+    entry = {
+        'timestamp': datetime.now(timezone.utc).isoformat(),
+        'rating': data.get('rating', 0),
+        'text': data.get('text', ''),
+        'page': data.get('page', ''),
+        'tool': data.get('tool', ''),
+        'stage': data.get('stage', ''),
+        'exchanges': data.get('exchanges', 0)
+    }
+
+    feedback = []
+    if os.path.exists(FEEDBACK_FILE):
+        try:
+            with open(FEEDBACK_FILE, 'r') as f:
+                feedback = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            feedback = []
+
+    feedback.append(entry)
+    with open(FEEDBACK_FILE, 'w') as f:
+        json.dump(feedback, f, indent=2)
+
+    return jsonify({'success': True})
+
+
+@app.route('/api/feedback/summary', methods=['GET'])
+def feedback_summary():
+    """Generate an AI-powered summary of all feedback with prioritised recommendations."""
+    if not os.path.exists(FEEDBACK_FILE):
+        return jsonify({'summary': 'No feedback collected yet.'})
+
+    with open(FEEDBACK_FILE, 'r') as f:
+        feedback = json.load(f)
+
+    if not feedback:
+        return jsonify({'summary': 'No feedback collected yet.'})
+
+    avg_rating = sum(f.get('rating', 0) for f in feedback if f.get('rating')) / max(1, sum(1 for f in feedback if f.get('rating')))
+
+    feedback_text = f"Total feedback entries: {len(feedback)}\nAverage rating: {avg_rating:.1f}/5\n\n"
+    for i, f in enumerate(feedback[-50:], 1):  # Last 50 entries
+        feedback_text += f"#{i} | Rating: {f.get('rating', 'n/a')}/5 | Tool: {f.get('tool', 'n/a')} | Stage: {f.get('stage', 'n/a')} | Exchanges: {f.get('exchanges', 'n/a')}\n"
+        if f.get('text'):
+            feedback_text += f"   Comment: {f['text']}\n"
+        feedback_text += f"   Time: {f.get('timestamp', 'n/a')}\n\n"
+
+    summary_prompt = f"""Analyse the following user feedback from Wade Studio (a virtual innovation workshop tool).
+
+Group feedback by theme. For each theme:
+1. Name the theme (2-4 words)
+2. How many people mentioned it
+3. Average rating of those who mentioned it
+4. One representative quote
+5. Specific, actionable recommendation
+
+Prioritise themes by frequency x severity. End with a "Top 3 actions" section — the three most impactful changes to make right now.
+
+Be direct. No fluff.
+
+FEEDBACK DATA:
+{feedback_text}"""
+
+    try:
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1500,
+            messages=[{"role": "user", "content": summary_prompt}]
+        )
+        summary = response.content[0].text
+    except Exception as e:
+        summary = f"Error generating summary: {str(e)}"
+
+    return jsonify({
+        'total': len(feedback),
+        'average_rating': round(avg_rating, 1),
+        'summary': summary
+    })
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=port, debug=os.environ.get('FLASK_DEBUG', 'false').lower() == 'true')

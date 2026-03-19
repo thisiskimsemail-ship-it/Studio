@@ -2955,3 +2955,63 @@ function maybeStartTour() {
         }, 2000);
     }
 }
+
+// === FEEDBACK WIDGET ===
+(function() {
+    const tab = $('#feedbackTab');
+    const panel = $('#feedbackPanel');
+    const closeBtn = $('#feedbackClose');
+    const submitBtn = $('#feedbackSubmit');
+    const input = $('#feedbackInput');
+    const stars = document.querySelectorAll('.feedback-star');
+    let selectedRating = 0;
+
+    if (!tab || !panel) return;
+
+    tab.addEventListener('click', () => { panel.classList.remove('hidden'); tab.style.display = 'none'; });
+    closeBtn.addEventListener('click', () => { panel.classList.add('hidden'); tab.style.display = ''; });
+
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            selectedRating = parseInt(star.dataset.rating);
+            stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.rating) <= selectedRating));
+        });
+    });
+
+    submitBtn.addEventListener('click', async () => {
+        const text = input.value.trim();
+        if (!selectedRating && !text) return;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+
+        try {
+            await fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    rating: selectedRating,
+                    text: text,
+                    page: window.location.pathname,
+                    tool: state.exercise || null,
+                    stage: state.mode || null,
+                    exchanges: state.messages ? state.messages.filter(m => m.role === 'user').length : 0,
+                    timestamp: new Date().toISOString()
+                })
+            });
+            submitBtn.textContent = 'Thanks!';
+            input.value = '';
+            selectedRating = 0;
+            stars.forEach(s => s.classList.remove('active'));
+            setTimeout(() => {
+                panel.classList.add('hidden');
+                tab.style.display = '';
+                submitBtn.textContent = 'Send feedback';
+                submitBtn.disabled = false;
+            }, 1500);
+        } catch(e) {
+            submitBtn.textContent = 'Failed — try again';
+            submitBtn.disabled = false;
+        }
+    });
+})();
