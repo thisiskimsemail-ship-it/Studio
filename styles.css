@@ -3452,8 +3452,8 @@ body.board-maximised > .input-area {
 }
 .board-toggle:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.8); }
 .board-toggle.active {
-    background: var(--orange);
-    border-color: var(--orange);
+    background: var(--stage-color, var(--orange));
+    border-color: var(--stage-color, var(--orange));
     color: #fff;
 }
 .board-count {
