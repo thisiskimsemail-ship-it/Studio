@@ -1554,6 +1554,7 @@ async function streamResponse() {
         state.messages.push({ role: 'assistant', content: fullText });
 
         if (state.routing) {
+            state.exchangeCount++;
             // Render inline tool suggestion buttons if WAiDE recommended any
             if (suggestedKeys.length > 0) {
                 const suggestDiv = document.createElement('div');
