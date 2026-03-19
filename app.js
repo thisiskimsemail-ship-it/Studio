@@ -945,7 +945,7 @@ function enterStudio() {
         // Show input after Pete's first message arrives
         if (inputArea) inputArea.style.display = '';
         // Auto-start tour for first-time users
-        if (typeof maybeStartTour === 'function') maybeStartTour();
+        // Tour disabled on auto-start — users can click ? to start it
     });
 }
 
