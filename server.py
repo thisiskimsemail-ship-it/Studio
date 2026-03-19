@@ -1862,7 +1862,17 @@ REPORT STRUCTURE — use these exact section names and order:
 2-3 sentences. The arc: where divergence opened up, where convergence landed, the turning point.
 
 ### Key Moments
-2-3 highlights. For each: lead with the analytical insight (one sentence explaining WHY it matters — not just restating it), then the user's exact words in a blockquote. The commentary must add genuine analytical value. Bad: "This captures the core transformation." Good: "This is an identity statement, not a deliverable request — it means your product needs to shift how they see themselves."
+3 highlights — these should be the moments that made you lean forward as a facilitator. For each:
+
+1. **Bold insight title** (3-5 words that name the pattern — e.g. "The identity problem hiding inside the feature request")
+2. One sentence of sharp analytical commentary that connects what they said to something bigger — a market truth, a psychological pattern, a strategic implication they haven't seen yet. This is where you earn your keep. Don't restate what they said. Tell them what it MEANS.
+3. Their exact words in a blockquote.
+
+QUALITY BAR for commentary:
+- Bad: "This captures the core transformation you facilitate." (restating)
+- Bad: "This is an important insight." (empty)
+- Good: "This is an identity statement, not a deliverable request — it means your product needs to shift how they see themselves, not just what they produce."
+- Good: "You said 'no one else is doing this' — but that's a warning sign, not a competitive advantage. If no one else is doing it, either the market doesn't exist yet or you haven't found the competitors."
 
 ### Your Lean Canvas
 Render the completed Lean Canvas as a markdown table. Fill every block with specific content from the conversation. If a block wasn't discussed, write "To explore." Mark weak/untested content with "(hypothesis — needs testing)."
@@ -1882,7 +1892,13 @@ Render the completed Lean Canvas as a markdown table. Fill every block with spec
 NOTE: Only include this section for Lean Canvas exercises. For other tools, replace with a tool-specific output section (e.g. "The Root Cause Chain" for Five Whys, "Your Pitch" for Elevator Pitch).
 
 ### The Reframe
-If the user answered a reflection question at the end of the session ("What's the one thing you know now that you didn't when you walked in?"), open with their exact words in a blockquote. Then add 1-2 sentences of analytical commentary on what this reveals. If no reflection answer exists, write 2-3 sentences on what the exercise revealed that they didn't see when they walked in. Third-person analytical voice.
+This is the most important section of the report. It's the "aha" — the thing they came in NOT seeing that the exercise surfaced.
+
+If the user answered a reflection question, open with their exact words in a blockquote. Then write 2-3 sentences that go FURTHER than what they said — connect the dots they haven't connected yet. Name the real problem underneath the stated problem. Identify the assumption they're building on that hasn't been tested. Point to the gap between what they think is true and what the evidence suggests.
+
+If no reflection answer exists, write the reframe yourself: "You came in thinking [X]. But what emerged is [Y]. The real question isn't [what they asked] — it's [what they should be asking]."
+
+This should be the paragraph they screenshot and send to their co-founder.
 
 ### Your Commitment
 If the user made a 48-hour commitment at the end of the session, state it here: "You committed to: [their exact words]." Bold it. This is their self-contract. If no commitment was made, omit this section.
@@ -1891,13 +1907,25 @@ If the user made a 48-hour commitment at the end of the session, state it here: 
 Exactly 3 questions. Each from a DIFFERENT category. Make them uncomfortable, not obvious.
 Categories: ASSUMPTION, STAKEHOLDER, REVERSAL, TIMELINE, COST, IDENTITY, SYSTEM.
 
-### Recommended Actions
-MAXIMUM 3 actions. Sequenced:
-1. **This week** — immediate, specific, you know exactly what "done" looks like
-2. **Next 2 weeks** — builds on action 1
-3. **Stretch** — the harder move
+### What to Do Next
+Exactly 5 actions. These should feel like the best advice they've ever received — the kind of thing a world-class mentor would say after listening carefully to everything they shared. Each action should make them think "I never would have thought of that, but it's obviously right."
 
-Every action must be grounded in their specific context. No generic advice ("join a Slack community," "connect with consultants"). If you can't make it specific, don't include it. Action 1 should align with their 48-hour commitment if they made one.
+RULES FOR BRILLIANT ACTIONS:
+- Never generic. Every action must reference something SPECIFIC from their conversation — a name they mentioned, a number they cited, a fear they revealed, a blind spot you noticed.
+- Each action has a SURPRISING element — an unexpected angle, a counterintuitive move, a connection they didn't make.
+- Each action is completeable — you know exactly what "done" looks like.
+- Sequence them from immediate to strategic.
+
+Format:
+1. **[Bold action title]** — [One sentence: what to do, why it's surprising, and what it will reveal]. *Do this by [specific timeframe].*
+2. **[Bold action title]** — [Same format]. *Do this by [specific timeframe].*
+3. **[Bold action title]** — [Same format]. *Do this by [specific timeframe].*
+4. **[Bold action title]** — [Same format]. *Do this by [specific timeframe].*
+5. **[Bold action title]** — [Same format]. *Do this by [specific timeframe].*
+
+QUALITY BAR — ask yourself: would a Tina Seelig-level thinker be impressed by these actions? If any action could apply to any random startup, delete it and write something specific to THIS person. If any action is "talk to customers" or "do market research" without specifying WHO and WHAT to ask, it's not good enough.
+
+Action 1 should align with their 48-hour commitment if they made one.
 
 ### Continue in The Studio
 One sentence: "Your [weakest area] is your riskiest assumption. Try [tool name] next." Link to the tool. Nothing more.
