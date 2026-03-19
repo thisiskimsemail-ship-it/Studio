@@ -901,10 +901,10 @@ function swapToTool(mode, exercise, swapEl) {
     breakEl.innerHTML = introHTML;
     messagesEl.appendChild(breakEl);
 
-    // Carry all prior messages across, add a bridging message
+    // Carry all prior messages across, add a bridging message with switch marker
     state.messages = [
         ...previousMessages,
-        { role: 'user', content: `Let's switch to ${exerciseName}. Pick up from what we've covered and start this exercise.` }
+        { role: 'user', content: `Let's switch to ${exerciseName}. Pick up from what we've covered and start this exercise.`, _switchPoint: true }
     ];
 
     // Stream WAiDE's response with the new tool's system prompt
@@ -1063,7 +1063,10 @@ function appendMessage(role, content) {
 }
 
 function scrollToBottom() {
-    chatArea.scrollTop = chatArea.scrollHeight;
+    // Use rAF to ensure DOM has rendered before scrolling
+    requestAnimationFrame(() => {
+        chatArea.scrollTop = chatArea.scrollHeight;
+    });
 }
 
 // === SHOW REPORT CTA ===
@@ -1329,7 +1332,18 @@ async function streamResponse() {
     if (fullText && agentDiv) {
         let optMatch = fullText.match(/\[OPTIONS:\s*([^\]]+)\]/);
 
-        // FALLBACK: if Pete forgot [OPTIONS], detect quick-fire questions and inject buttons
+        // FALLBACK 1: routing-aware — inject buttons by exchange count during quick-fire
+        if (!optMatch && state.routing && state.exchangeCount <= 3) {
+            const routingButtons = [
+                'Idea Jam|Problem Solve',         // Q1 (exchangeCount=0)
+                'Napkin sketch|Blueprint',         // Q2 (exchangeCount=1)
+                'Just me|Other people',            // Q3 (exchangeCount=2)
+                'Quick and scrappy|Polished and tight' // Q4 (exchangeCount=3)
+            ];
+            optMatch = [null, routingButtons[state.exchangeCount]];
+        }
+
+        // FALLBACK 2: text-matching — catch quick-fire phrases outside routing
         if (!optMatch && fullText) {
             const normalised = fullText.replace(/[\u2018\u2019\u201C\u201D]/g, "'").toLowerCase();
             const quickFireFallbacks = [
@@ -1573,6 +1587,20 @@ async function generateReport() {
     try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 90000); // 90s timeout
+        // If user switched tools mid-session, send only current-tool messages + context summary
+        let reportMessages = [...state.messages];
+        const switchIdx = reportMessages.findLastIndex(m => m._switchPoint);
+        if (switchIdx > 0) {
+            const preSummary = reportMessages.slice(0, switchIdx)
+                .filter(m => m.role === 'user' && !m.content.startsWith('[SYSTEM]'))
+                .map(m => m.content).join(' | ');
+            reportMessages = [
+                { role: 'user', content: `[Context from previous exercise]: ${preSummary}` },
+                { role: 'assistant', content: 'Understood — I have the context from your previous exercise. Let me focus on this one.' },
+                ...reportMessages.slice(switchIdx).map(m => ({ role: m.role, content: m.content }))
+            ];
+        }
+
         const res = await fetch('/api/report', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1580,7 +1608,7 @@ async function generateReport() {
             body: JSON.stringify({
                 mode: state.mode,
                 exercise: state.exercise,
-                messages: state.messages,
+                messages: reportMessages,
                 parking_lot: state.parkingLot
             })
         });
@@ -2896,6 +2924,7 @@ const TOUR_STEPS = [
     { el: '#boardToggle', text: 'Open the Workshop Board to see your ideas, insights, and actions building up as you work.', pos: 'below' },
     { el: '#inputField', text: 'Type your responses here. Pete will guide you through the exercise one question at a time.', pos: 'above' },
     { el: '.help-challenge-row', text: '"Help me" gives you a nudge. "Challenge me" pushes you harder. Use them any time.', pos: 'above' },
+    { el: '#privacyLink', text: 'Your data stays yours. Read our privacy policy to see exactly how your session information is handled.', pos: 'above' },
     { el: '#saveSessionBtn', text: 'Save your session any time. We\'ll email you a link to pick up exactly where you left off.', pos: 'below' },
     { el: '#tourHelpBtn', text: 'You can replay this tour any time by clicking here. Now let\'s get to work.', pos: 'below' }
 ];
@@ -2977,7 +3006,9 @@ function maybeStartTour() {
 
 // === QUICK-FIRE BUTTON INJECTION (backup for missed OPTIONS) ===
 // Watch for new agent messages and inject buttons if they match quick-fire phrases
+// Skip messages that are still being streamed to avoid premature checking
 const qfObserver = new MutationObserver(() => {
+    if (state.streaming) return; // Don't check mid-stream — inline fallback handles it after completion
     document.querySelectorAll('.msg-agent').forEach(msg => {
         if (msg.dataset.qfChecked) return;
         msg.dataset.qfChecked = '1';

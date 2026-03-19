@@ -1336,7 +1336,7 @@ body.in-session #wadeCta { display: none !important; }
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    padding-bottom: 140px; /* Space for fixed input bar */
+    padding-bottom: 180px; /* Space for fixed input bar — generous to prevent messages hiding behind footer */
 }
 
 .msg {
@@ -1507,6 +1507,9 @@ body > .input-area {
     z-index: 200;
     transition: right 0.3s ease;
 }
+/* Hide disclaimer during sessions to reduce footer height — keeps input compact */
+body.in-session > .input-area .input-disclaimer { display: none; }
+body.in-session > .input-area .input-hint { margin-top: 0.2rem; }
 /* When board is open, input bar shrinks to match chat pane width */
 body.board-open > .input-area {
     right: 55%;
@@ -1829,6 +1832,14 @@ html[data-theme="light"] .mic-btn:hover { border-color: rgba(30,25,79,0.3); colo
     text-transform: uppercase;
     letter-spacing: 0.08em;
 }
+.privacy-link {
+    color: var(--text-muted);
+    text-decoration: underline;
+    text-decoration-color: rgba(255,255,255,0.15);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+}
+.privacy-link:hover { text-decoration-color: var(--text-dim); }
 
 /* === REPORT CTA (footer) === */
 .report-cta { display: contents; }
@@ -3890,7 +3901,7 @@ html[data-theme="light"] .tour-tooltip { background: #fff; border-color: rgba(30
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.06em;
-    border-radius: 0 5px 5px 0;
+    border-radius: 0 8px 8px 0;
     cursor: pointer;
     z-index: 1000;
     transition: opacity 0.2s;
