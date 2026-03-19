@@ -346,7 +346,8 @@ const state = {
     sessionStartTime: null, // Date.now() when exercise starts
     board: { cards: [], visible: false },  // workshop board state
     boardMode: 'default',  // 'default' | 'lean-canvas'
-    pitch: { customer: null, problem: null, solution: null, benefit: null, differentiator: null }  // elevator pitch components
+    pitch: { customer: null, problem: null, solution: null, benefit: null, differentiator: null },  // elevator pitch components
+    wrapped: false  // true when [WRAP] signal received — hides Help/Challenge buttons
 };
 
 // === DOM ===
@@ -402,7 +403,7 @@ function moveInputToSession() {
 
 // Render "Challenge me" + "Help me" buttons after each AI response
 function renderSessionActions() {
-    if (!state.mode || state.routing || state.reportGenerated) return;
+    if (!state.mode || state.routing || state.reportGenerated || state.wrapped) return;
     document.querySelector('.chat-action-btns')?.remove();
 
     const actionsDiv = document.createElement('div');
@@ -619,6 +620,7 @@ function startExercise(mode, exercise, startMsg = null) {
     state.rating = null;
     state.preReportAsked = false;
     state.currentPhase = null;
+    state.wrapped = false;
     state.sessionStartTime = Date.now();
 
     // Hide welcome, move input to session, show session bar
@@ -1564,6 +1566,7 @@ async function streamResponse() {
             maybeShowReportCta();
             // Show wrap-up card if facilitator signalled the exercise is complete
             if (wrapSignaled && !state.reportGenerated) {
+                state.wrapped = true;
                 renderWrapPrompt();
                 // Auto-generate report in the background while user reads Pete's closing message
                 generateReport();
