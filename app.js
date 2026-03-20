@@ -1667,9 +1667,9 @@ function showReportProgress() {
 
     const stages = [
         { pct: 12, text: 'Analysing your session...' },
-        { pct: 25, text: 'Identifying key moments...' },
-        { pct: 40, text: 'Matching patterns from the Wade community...' },
-        { pct: 55, text: 'Building your reframe...' },
+        { pct: 25, text: 'Identifying ah ha moments...' },
+        { pct: 40, text: 'Building your reframe...' },
+        { pct: 55, text: 'Adding insights from the Wade community...' },
         { pct: 68, text: 'Writing your action plan...' },
         { pct: 80, text: 'Assembling your report...' },
         { pct: 90, text: 'Almost there...' },
@@ -2661,6 +2661,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.key === 'Enter') { e.preventDefault(); doAdd(); }
                 if (e.key === 'Escape') row.remove();
             });
+        });
+    }
+
+    // Consolidate button — AI merge duplicates
+    const consolidateBtn = document.getElementById('boardConsolidate');
+    if (consolidateBtn) {
+        consolidateBtn.addEventListener('click', async () => {
+            const cards = state.board.cards;
+            if (cards.length < 3) {
+                consolidateBtn.textContent = 'Not enough cards';
+                setTimeout(() => { consolidateBtn.textContent = '✦ Consolidate'; }, 2000);
+                return;
+            }
+
+            consolidateBtn.disabled = true;
+            consolidateBtn.textContent = '✦ Consolidating...';
+            consolidateBtn.classList.add('consolidating');
+
+            try {
+                const res = await fetch('/api/consolidate-board', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cards })
+                });
+                const data = await res.json();
+
+                if (data.error) {
+                    consolidateBtn.textContent = 'Error — try again';
+                    consolidateBtn.disabled = false;
+                    consolidateBtn.classList.remove('consolidating');
+                    setTimeout(() => { consolidateBtn.textContent = '✦ Consolidate'; }, 3000);
+                    return;
+                }
+
+                // Replace board cards with consolidated versions
+                // Keep the same stage/source metadata, generate new IDs
+                const newCards = data.cards.map(c => ({
+                    id: 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                    text: c.text,
+                    zone: c.zone,
+                    stage: state.mode || 'reframe',
+                    source: EXERCISE_LABELS[state.exercise] || state.exercise || 'session',
+                    timestamp: Date.now()
+                }));
+
+                state.board.cards = newCards;
+                renderBoard();
+                saveSession();
+
+                const reduced = data.original_count - data.new_count;
+                consolidateBtn.textContent = `✦ ${data.new_count} cards (was ${data.original_count})`;
+                consolidateBtn.classList.remove('consolidating');
+                setTimeout(() => {
+                    consolidateBtn.textContent = '✦ Consolidate';
+                    consolidateBtn.disabled = false;
+                }, 4000);
+
+            } catch (err) {
+                consolidateBtn.textContent = '✦ Consolidate';
+                consolidateBtn.disabled = false;
+                consolidateBtn.classList.remove('consolidating');
+            }
         });
     }
 });

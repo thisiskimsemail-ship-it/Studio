@@ -2675,6 +2675,62 @@ def _save_sessions(sessions):
         json.dump(sessions, f, indent=2)
 
 
+CONSOLIDATE_PROMPT = """You are a sharp editorial assistant for a workshop board. The user has generated many cards during a brainstorming exercise. Your job is to consolidate them: merge duplicates, sharpen language, and reduce the total count while preserving every distinct idea.
+
+RULES:
+- Merge cards that say the same thing in different words into ONE card with the best phrasing
+- Keep cards that represent genuinely different ideas as separate cards
+- Make every card pithy — 8 words max where possible. Cut filler words. Lead with the verb or the noun.
+- Preserve the zone (insights/ideas/parking/actions) — never move a card between zones
+- Return ONLY valid JSON — no markdown, no explanation, no preamble
+- The response must be a JSON array of objects, each with "text" and "zone" fields
+
+Example input:
+[{"text": "Content marketing to build awareness", "zone": "ideas"}, {"text": "Content marketing to busy executives", "zone": "ideas"}, {"text": "LinkedIn thought leadership content and targeted ads", "zone": "ideas"}]
+
+Example output:
+[{"text": "Content marketing targeting exec audiences", "zone": "ideas"}, {"text": "LinkedIn thought leadership + targeted ads", "zone": "ideas"}]"""
+
+
+@app.route('/api/consolidate-board', methods=['POST'])
+def consolidate_board():
+    data = request.json
+    cards = data.get('cards', [])
+
+    if not cards or len(cards) < 2:
+        return jsonify({'error': 'Need at least 2 cards to consolidate'}), 400
+
+    # Build a simple representation for the LLM
+    card_list = [{"text": c.get("text", ""), "zone": c.get("zone", "ideas")} for c in cards]
+
+    try:
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1500,
+            system=CONSOLIDATE_PROMPT,
+            messages=[{
+                "role": "user",
+                "content": f"Consolidate these {len(card_list)} workshop cards:\n{json.dumps(card_list)}"
+            }],
+        )
+        text = ''
+        for block in response.content:
+            if hasattr(block, 'text'):
+                text += block.text
+
+        clean = text.strip()
+        if clean.startswith('```'):
+            clean = clean.split('\n', 1)[-1]
+            clean = clean.rsplit('```', 1)[0]
+            clean = clean.strip()
+
+        consolidated = json.loads(clean)
+        return jsonify({'cards': consolidated, 'original_count': len(cards), 'new_count': len(consolidated)})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/session/save', methods=['POST'])
 def save_session():
     data = request.json
