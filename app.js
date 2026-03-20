@@ -2351,6 +2351,26 @@ function switchBoardLayout(mode) {
 }
 
 function addBoardCard(text, zone, stage, source) {
+    // Deduplicate: skip if a very similar card already exists in the same zone
+    const normalise = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const newNorm = normalise(text);
+    const isDupe = state.board.cards.some(c => {
+        if (c.zone !== zone) return false;
+        const existNorm = normalise(c.text);
+        // Exact match after normalisation
+        if (existNorm === newNorm) return true;
+        // One contains the other (catches "LinkedIn outbound" vs "LinkedIn outbound campaign")
+        if (existNorm.includes(newNorm) || newNorm.includes(existNorm)) return true;
+        // High similarity — compare overlapping words
+        const wordsA = new Set(text.toLowerCase().split(/\s+/).filter(w => w.length > 2));
+        const wordsB = new Set(c.text.toLowerCase().split(/\s+/).filter(w => w.length > 2));
+        if (wordsA.size === 0 || wordsB.size === 0) return false;
+        const overlap = [...wordsA].filter(w => wordsB.has(w)).length;
+        const similarity = overlap / Math.max(wordsA.size, wordsB.size);
+        return similarity >= 0.75;
+    });
+    if (isDupe) return null;
+
     const card = {
         id: 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
         text: text,
