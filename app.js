@@ -1785,10 +1785,21 @@ async function generateReport() {
         reportUnlock.classList.remove('hidden');
         reportCta.classList.add('hidden');
 
-        // Scroll report into view — use chatPane if board was open, else chatArea
+        // Scroll unlock form into view inside the chatPane scroll container
         setTimeout(() => {
-            reportCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+            const chatPane = document.getElementById('chatPane');
+            if (chatPane) {
+                // Scroll chatPane so report + unlock form are visible
+                reportUnlock.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                // Also scroll the outer chatArea in case it's clipping
+                chatArea.scrollTop = chatArea.scrollHeight;
+            } else {
+                reportCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            console.log('[Report] Report card visible:', !reportCard.classList.contains('hidden'),
+                'Unlock visible:', !reportUnlock.classList.contains('hidden'),
+                'Report content length:', reportContent.innerHTML.length);
+        }, 200);
 
     } catch (err) {
         progress.error();
