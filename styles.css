@@ -4053,6 +4053,8 @@ html[data-theme="light"] .tour-tooltip { background: #fff; border-color: rgba(30
     font-size: 0.9rem;
 }
 .feedback-tab:hover { transform: translateY(-1px); box-shadow: 0 4px 16px color-mix(in srgb, var(--stage-color, var(--orange)) 40%, transparent); }
+/* Yellow feedback tab needs navy text for contrast in dark mode */
+html:not([data-theme="light"]) body[data-mode="framework"] .feedback-tab { color: #1E194F; }
 
 .feedback-panel {
     position: fixed;
