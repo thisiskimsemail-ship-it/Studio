@@ -1753,7 +1753,8 @@ async function generateReport() {
 
         const data = await res.json();
 
-        if (data.error) {
+        if (data.error || !data.report) {
+            console.error('[Report] Error or empty:', data.error || 'empty report');
             progress.error();
             reportCtaBtn.textContent = 'Something went wrong — try again';
             reportCtaBtn.disabled = false;
@@ -1763,9 +1764,16 @@ async function generateReport() {
         progress.complete();
         state.reportText = data.report;
         state.reportGenerated = true;
+        console.log('[Report] Got report text, length:', data.report.length);
+
+        // Close board so report has full width
+        if (state.board.visible) {
+            toggleBoard();
+        }
 
         // Clean up end-of-session clutter
         document.querySelector('.chat-action-btns')?.remove();
+        document.querySelector('.option-chips')?.remove();
         // Update wrap card: remove the report button (report is now visible below)
         document.querySelector('.wrap-btn-report')?.remove();
 
@@ -1777,8 +1785,10 @@ async function generateReport() {
         reportUnlock.classList.remove('hidden');
         reportCta.classList.add('hidden');
 
-        // Scroll report into view smoothly
-        reportCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Scroll report into view — use chatPane if board was open, else chatArea
+        setTimeout(() => {
+            reportCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
 
     } catch (err) {
         progress.error();
